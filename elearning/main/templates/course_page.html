@@ -1,0 +1,324 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+
+{% block content %}
+    <div class="container mt-4">
+    <!-- Course Details -->
+    <div class="row mb-4">
+        <!-- Course Details -->
+        <div class="col-md-8">
+            <div class="card bg-light shadow-lg mb-4">
+                <div class="card-body">
+                    <h1 class="fw-bold text-primary mb-3">{{ course.title }}</h1>
+                    <p class="text-secondary mb-4">{{ course.description }}</p>
+                    <p class="mb-2"><i class="bi bi-tags"></i> <strong>Category:</strong> {{ course.category }}</p>
+                    <p class="mb-0"><i class="bi bi-person"></i>
+                        <strong>Instructor:</strong> {{ course.instructor.username }}</p>
+                </div>
+            </div>
+        </div>
+        <!-- Sidebar -->
+        {% if user == course.instructor %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light text-center fw-bold">Actions</div>
+                <div class="card-body text-center">
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                        <a href="{% url 'add_lesson' course.id %}" class="btn btn-primary me-2">Add Lesson</a>
+                        <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#addQuizModal">Add
+                            Quiz
+                        </button>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Tabs for Lessons, Quizzes, and Reviews -->
+    <ul class="nav nav-tabs" id="courseTabs">
+        <li class="nav-item">
+            <a class="nav-link active" data-bs-toggle="tab" href="#lessons">Lessons</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="tab" href="#quizzes">Quizzes</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="tab" href="#reviews">Reviews</a>
+        </li>
+    </ul>
+
+    <div class="tab-content mt-3">
+    <!-- Lessons List -->
+    <div class="tab-pane fade show active" id="lessons">
+        {% if lessons %}
+            <ul class="list-group list-group-flush">
+                {% for lesson in lessons %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>Lesson {{ forloop.counter }}: {{ lesson.title }}</span>
+                        <div>
+                            <button
+                                    id="play-btn-{{ lesson.id }}"
+                                    class="btn {% if lesson.id in completed_lesson_ids %}btn-success{% else %}btn-primary{% endif %}"
+                                    onclick="playLesson({{ lesson.id }})"
+                            >
+                                {% if lesson.id in completed_lesson_ids %}Replay{% else %}
+                                    Play{% endif %}
+                            </button>
+                            {% if user == course.instructor %}
+                                <a href="{% url 'edit_lesson' lesson.id %}" class="btn btn-sm btn-warning me-2">Edit</a>
+                                <form action="{% url 'delete_lesson' lesson.id %}" method="post"
+                                      style="display: inline;">
+                                    {% csrf_token %}
+                                    <button class="btn btn-sm btn-danger" data-bs-toggle="modal"
+                                            data-bs-target="#deleteModal"
+                                            data-title="{{ lesson.title }}"
+                                            data-url="{% url 'delete_lesson' lesson.id %}">
+                                        Delete
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="text-muted">No lessons available yet.</p>
+        {% endif %}
+    </div>
+
+
+    <!-- Quizzes List -->
+    <div class="tab-pane fade" id="quizzes">
+        {% if quizzes %}
+            <ul class="list-group list-group-flush">
+                {% for quiz in quizzes %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>Quiz {{ forloop.counter }}: {{ quiz.title }}</span>
+                        <div>
+                            {% if not is_instructor %}
+                                {% if quiz.id in quiz_scores %}
+                                    <span class="badge bg-info">Score: {{ quiz_scores|dict_key:quiz.id|floatformat:2 }}%</span>
+                                {% endif %}
+                                <a href="{% url 'quiz_start' quiz.id %}"
+                                   class="btn btn-sm {% if quiz.id in completed_quizzes_ids %}btn-success{% else %}btn-primary{% endif %}">
+                                    {% if quiz.id in quiz_scores %}Restart{% else %}Start{% endif %}
+                                </a>
+                            {% else %}
+                                <a href="{% url 'edit_quiz' quiz.id %}"
+                                   class="btn btn-sm btn-warning me-2">Edit</a>
+                                <form action="{% url 'delete_quiz' quiz.id %}" method="post"
+                                      style="display: inline;">
+                                    {% csrf_token %}
+                                    <button class="btn btn-sm btn-danger" data-bs-toggle="modal"
+                                            data-bs-target="#deleteModal" data-title="{{ quiz.title }}"
+                                            data-url="{% url 'delete_quiz' quiz.id %}">
+                                        Delete
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="text-muted">No quizzes available yet.</p>
+        {% endif %}
+    </div>
+
+
+    <!-- Reviews Tab -->
+    <div class="tab-pane fade" id="reviews">
+        {% if is_instructor %}
+            <!-- Reviews List for Instructor -->
+            {% if reviews %}
+                <ul class="list-group list-group-flush">
+                    {% for review in reviews %}
+                        <li class="list-group-item">
+                            <div>
+                                <strong>{{ review.user.username }}</strong>
+                                <span class="badge bg-info ms-2">Rating: {{ review.rating }}</span>
+                                <span class="float-end text-muted">{{ review.created_at }}</span>
+                            </div>
+                            <p class="mt-2">{{ review.comment }}</p>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-muted">No reviews available yet.</p>
+            {% endif %}
+        {% else %}
+            <!-- Review Input Form for Student -->
+            {% if show_review_form %}
+                <form method="POST" action="{% url 'submit_review' course.id %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="rating" class="form-label">Rating</label>
+                        <input type="number" class="form-control" id="rating" name="rating" min="1" max="5" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="comment" class="form-label">Comment</label>
+                        <textarea class="form-control" id="comment" name="comment" rows="3" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit Review</button>
+                </form>
+            {% else %}
+                <p class="text-muted">Complete all lessons and quizzes to leave a review.</p>
+            {% endif %}
+        {% endif %}
+    </div>
+
+
+
+    <!-- Add Quiz Modal -->
+    <div class="modal fade" id="addQuizModal" tabindex="-1" aria-labelledby="addQuizModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addQuizModalLabel">Add New Quiz</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="add-quiz-form" method="POST" action="{% url 'add_quiz' course.id %}">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="quiz-title" class="form-label">Quiz Title</label>
+                            <input type="text" name="title" id="quiz-title" class="form-control"
+                                   placeholder="Enter quiz title" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Proceed to Questions</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete <span id="itemTitle"></span>?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form id="deleteForm" method="post" action="">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Yes, Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Video Modal -->
+    <div class="modal fade" id="videoModal" tabindex="-1" aria-labelledby="videoModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="videoModalLabel">Lesson Video</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <video id="lesson-video" controls class="w-100">
+                        <source src="" type="video/mp4">
+                    </video>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Add event listener for quiz form submission
+            const quizForm = document.getElementById('add-quiz-form');
+            if (quizForm) {
+                quizForm.addEventListener('submit', function (e) {
+                    const title = document.getElementById('quiz-title')?.value.trim();
+                    // Prevent submission if title is empty
+                    if (!title) {
+                        e.preventDefault();
+                        alert('Quiz title cannot be empty.');
+                    }
+                });
+            }
+
+            // Handle the delete modal's show event
+            const deleteModal = document.getElementById('deleteModal');
+            if (deleteModal) {
+                deleteModal.addEventListener('show.bs.modal', function (event) {
+                    const button = event.relatedTarget; // Trigger button
+                    const title = button.getAttribute('data-title'); // Item title
+                    const url = button.getAttribute('data-url'); // Delete URL
+
+                    // Update modal content
+                    deleteModal.querySelector('#itemTitle').textContent = title;
+                    deleteModal.querySelector('#deleteForm').setAttribute('action', url);
+                });
+            }
+
+            // Function to handle lesson play button click
+            function playLesson(lessonId) {
+                fetch(`/lesson/${lessonId}/play/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json',
+                    },
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! Status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.status === 'success') {
+                            updateLessonUI(lessonId, data.video_url);
+                        } else {
+                            alert(data.message || "An error occurred while processing your request.");
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert("A network error occurred. Please try again.");
+                    });
+            }
+
+            function updateLessonUI(lessonId, videoUrl) {
+                const button = document.getElementById(`play-btn-${lessonId}`);
+                if (button) {
+                    button.classList.replace('btn-primary', 'btn-success');
+                    button.textContent = 'Replay';
+                }
+
+                const lessonItem = button?.closest('li')?.querySelector('span');
+                if (lessonItem && !lessonItem.querySelector('.bi-check-circle')) {
+                    lessonItem.innerHTML += ' <i class="bi bi-check-circle text-success"></i>';
+                }
+
+                const videoModal = new bootstrap.Modal(document.getElementById('videoModal'));
+                const lessonVideo = document.getElementById('lesson-video');
+                if (lessonVideo) {
+                    lessonVideo.src = videoUrl;
+                    videoModal.show();
+                }
+            }
+
+
+            window.playLesson = playLesson;
+        })// Expose globally for inline usage
+
+    </script>
+
+
+{% endblock %}
+
+
+
+

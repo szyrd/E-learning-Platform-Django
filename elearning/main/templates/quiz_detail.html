@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block content %}
+    <div class="container">
+        <h1>Quiz: {{ quiz.title }}</h1>
+        <ul>
+            {% for index, question in questions %}
+                <li>{{ index }}: {{ question.question_text }}</li>
+                <ul>
+                    <li>A: {{ question.option_a }}</li>
+                    <li>B: {{ question.option_b }}</li>
+                    <li>C: {{ question.option_c }}</li>
+                    <li>D: {{ question.option_d }}</li>
+                    <li>Correct Option: {{ question.correct_option }}</li>
+                </ul>
+            {% endfor %}
+        </ul>
+
+    </div>
+{% endblock %}
+

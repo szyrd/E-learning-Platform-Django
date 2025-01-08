@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="container mt-4">
+        <h2>Quiz Results</h2>
+        <p>You scored: {{ score }}%</p>
+        <a href="{% url 'course_page' course_id %}" class="btn btn-secondary">Back to Quiz List</a>
+
+    </div>
+{% endblock %}
+

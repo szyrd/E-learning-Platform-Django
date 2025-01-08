@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2>My Progression</h2>
+
+    <!-- Table for Completed Lessons -->
+    <h3>Completed Lessons</h3>
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Course</th>
+            <th>Completed Lessons</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for lesson in lessons_data %}
+            <tr>
+                <td>{{ lesson.course_title }}</td>
+                <td><p id="completed-lessons">{{ lesson.completed_lessons}}</p></td>
+                <td>
+                    <a href="{% url 'course_page' lesson.course_id %}" class="btn btn-primary">Resume</a>
+                </td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="3">No progression data available.</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Table for Quiz Scores -->
+    <h3>Quiz Scores</h3>
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Course</th>
+            <th>Quiz Title</th>
+            <th>Quiz Score</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for quiz in quizzes_data %}
+            <tr>
+                <td>{{ quiz.course_title }}</td>
+                <td>{{ quiz.quiz_title }}</td>
+                <td>
+                    {% if quiz.quiz_score %}
+                        {{ quiz.quiz_score }}%
+                    {% else %}
+                        Not attempted
+                    {% endif %}
+                </td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="3">No quiz scores available.</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}
+
+

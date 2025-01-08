@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="container mt-5">
+        <h3 class="mb-4">Add Lessons</h3>
+        <form method="POST" id="lessonForm">
+            {% csrf_token %}
+            <div id="lesson-container">
+                <div class="lesson-group border rounded p-3 mb-4">
+                    <h5 class="mb-3">Lesson</h5>
+                    <div class="mb-3">
+                        <label class="form-label">Lesson Title</label>
+                        <input type="text" class="form-control" name="title[]" placeholder="Enter lesson title"
+                               required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Lesson Content</label>
+                        <textarea class="form-control" name="content[]" rows="4" placeholder="Enter lesson content"
+                                  required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Lesson Video URL</label>
+                        <input type="url" class="form-control" name="video_url[]" placeholder="Enter video URL"
+                               required>
+                    </div>
+                    <button type="button" class="btn btn-danger mt-2 remove-lesson">Remove Lesson</button>
+                </div>
+            </div>
+            <div class="d-flex justify-content-between">
+                <button type="button" class="btn btn-secondary mb-3" id="addLesson">+ Add Another Lesson</button>
+                <div>
+                    <a href="javascript:history.back()" class="btn btn-outline-danger me-2">Cancel</a>
+                    <button type="submit" class="btn btn-success">Submit Lessons</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const lessonContainer = document.getElementById("lesson-container");
+            const addLessonButton = document.getElementById("addLesson");
+
+            addLessonButton.addEventListener("click", () => {
+                const lessonGroup = document.querySelector(".lesson-group");
+                const newLessonGroup = lessonGroup.cloneNode(true);
+                newLessonGroup.querySelectorAll("input, textarea").forEach(input => {
+                    input.value = "";
+                });
+                lessonContainer.appendChild(newLessonGroup);
+            });
+
+            lessonContainer.addEventListener("click", (event) => {
+                if (event.target.classList.contains("remove-lesson")) {
+                    const lessonGroup = event.target.closest(".lesson-group");
+                    if (lessonContainer.childElementCount > 1) {
+                        lessonGroup.remove();
+                    } else {
+                        alert("At least one lesson is required.");
+                    }
+                }
+            });
+        });
+    </script>
+{% endblock %}
+

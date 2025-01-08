@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2 class="text-center">Register</h2>
+<form method="POST" action="{% url 'register' %}" class="w-50 mx-auto mt-4">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label for="username" class="form-label">Username</label>
+        <input type="text" class="form-control" id="username" name="username" required>
+    </div>
+    <div class="mb-3">
+        <label for="email" class="form-label">Email Address</label>
+        <input type="email" class="form-control" id="email" name="email" required>
+    </div>
+    <div class="mb-3">
+        <label for="password" class="form-label">Password</label>
+        <input type="password" class="form-control" id="password" name="password" required>
+    </div>
+    <div class="mb-3">
+        <label for="confirm_password" class="form-label">Confirm Password</label>
+        <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Role</label>
+        <div>
+            <input type="radio" id="is_student" name="role" value="Student" required checked>
+            <label for="is_student">Student</label>
+        </div>
+        <div>
+            <input type="radio" id="is_instructor" name="role" value="Instructor" required>
+            <label for="is_instructor">Instructor</label>
+        </div>
+    </div>
+    <div class="d-grid gap-2">
+        <button type="submit" class="btn btn-primary">Register</button>
+    </div>
+</form>
+{% endblock %}
