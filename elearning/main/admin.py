@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 
-from .models import Category, Course, Enrollment, Lesson, LessonCompletion, Payment, Question, Quiz, QuizAttempt, Review, User
+from .models import Category, Certificate, Course, Enrollment, Lesson, LessonCompletion, Payment, Question, Quiz, QuizAttempt, Review, User
 
 
 @admin.register(User)
@@ -91,3 +91,10 @@ class PaymentAdmin(admin.ModelAdmin):
     list_display = ("reference", "user", "course", "amount", "method", "status", "created_at")
     list_filter = ("status", "method")
     search_fields = ("reference", "user__username")
+
+
+@admin.register(Certificate)
+class CertificateAdmin(admin.ModelAdmin):
+    list_display = ("code", "enrollment", "issued_at")
+    search_fields = ("code", "enrollment__user__username", "enrollment__course__title")
+    readonly_fields = ("code", "issued_at")

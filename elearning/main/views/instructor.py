@@ -43,7 +43,7 @@ def students(request):
     enrollments = (
         Enrollment.objects.filter(course__instructor=request.user)
         .with_progress()
-        .select_related("user", "course")
+        .select_related("user", "course", "certificate")
         .order_by("-enrolled_at")
     )
     course_slug = request.GET.get("course")

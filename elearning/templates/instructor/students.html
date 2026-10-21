@@ -17,7 +17,7 @@
           <td><a href="{% url 'manage_course' r.e.course.slug %}">{{ r.e.course.title }}</a></td>
           <td class="text-muted">{{ r.e.enrolled_at|naturaltime }}</td>
           <td><div class="d-flex align-items-center gap-2"><div class="progress flex-grow-1"><div class="progress-bar {% if r.progress >= 100 %}bg-success{% endif %}" style="width:{{ r.progress }}%"></div></div><span class="small fw-semibold" style="width:36px">{{ r.progress }}%</span></div></td>
-          <td>{% if r.e.is_completed %}<span class="badge bg-success">Completed</span>{% else %}<span class="badge bg-primary">In progress</span>{% endif %}</td>
+          <td>{% if r.e.is_completed %}<span class="badge bg-success">Completed</span>{% if r.e.certificate_or_none %} <a class="small ms-1" href="{{ r.e.certificate.get_absolute_url }}" title="{{ r.e.certificate.code }}"><i class="bi bi-award"></i></a>{% endif %}{% else %}<span class="badge bg-primary">In progress</span>{% endif %}</td>
         </tr>
         {% empty %}<tr><td colspan="5" class="text-center text-muted py-4">No students yet.</td></tr>{% endfor %}
       </tbody>

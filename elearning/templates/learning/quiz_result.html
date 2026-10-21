@@ -1,6 +1,13 @@
 {% extends "learning/learn_base.html" %}
 {% block title %}Result · {{ quiz.title }}{% endblock %}
 {% block learn_content %}
+{% if enrollment and enrollment.is_completed and enrollment.certificate_or_none %}
+<div class="cert-banner mb-4">
+  <span class="ico"><i class="bi bi-award-fill"></i></span>
+  <div class="flex-grow-1"><div class="fw-bold fs-5">Congratulations, you've completed {{ course.title }}!</div><div class="text-muted small">Your certificate is ready. Certificate ID <code>{{ enrollment.certificate.code }}</code></div></div>
+  <a class="btn btn-primary" href="{{ enrollment.certificate.get_absolute_url }}">View certificate <i class="bi bi-arrow-right"></i></a>
+</div>
+{% endif %}
 <div class="question-card d-flex flex-wrap align-items-center gap-4 mb-4">
   <div class="score-ring" style="--pct:{{ attempt.score|floatformat:0 }}; --ring-color: {% if attempt.passed %}#276a1a{% else %}#a32e00{% endif %}"><div>{{ attempt.score|floatformat:0 }}%</div></div>
   <div class="flex-grow-1">

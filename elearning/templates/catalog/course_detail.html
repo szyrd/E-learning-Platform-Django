@@ -131,7 +131,10 @@
             <div class="d-flex justify-content-between small mb-1"><span class="fw-semibold">Your progress</span><span>{{ enrollment.progress_percent }}%</span></div>
             <div class="progress mb-3"><div class="progress-bar {% if enrollment.is_completed %}bg-success{% endif %}" style="width:{{ enrollment.progress_percent }}%"></div></div>
             <a class="btn btn-primary w-100 btn-lg" href="{% url 'learn' course.slug %}">{% if enrollment.is_completed %}Review course{% elif enrollment.progress_percent %}Continue learning{% else %}Start learning{% endif %} <i class="bi bi-arrow-right ms-1"></i></a>
-            {% if enrollment.is_completed %}<div class="text-success small fw-semibold mt-2 text-center"><i class="bi bi-patch-check-fill me-1"></i>Completed {{ enrollment.completed_at|date:"M j, Y" }}</div>{% endif %}
+            {% if enrollment.is_completed %}
+              <div class="text-success small fw-semibold mt-2 text-center"><i class="bi bi-patch-check-fill me-1"></i>Completed {{ enrollment.completed_at|date:"M j, Y" }}</div>
+              {% if enrollment.certificate_or_none %}<a class="btn btn-soft w-100 mt-2" href="{{ enrollment.certificate.get_absolute_url }}"><i class="bi bi-award me-1"></i>View certificate</a>{% endif %}
+            {% endif %}
           {% else %}
             <div class="d-flex align-items-baseline gap-2 mb-3">
               {% if course.is_free %}<span class="fs-3 fw-bold text-success">Free</span>{% else %}<span class="fs-3 fw-bold">${{ course.price|floatformat:2 }}</span><span class="text-muted small">one-time · lifetime access</span>{% endif %}

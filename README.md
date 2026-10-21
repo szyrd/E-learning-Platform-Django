@@ -17,6 +17,7 @@ Instructors create courses, lessons and quizzes, and follow their students' prog
 - Learning view with video player (YouTube, Vimeo or direct MP4), sidebar outline and live progress bar
 - Graded multiple-choice quizzes with pass marks, per-question feedback and attempt history
 - "My Learning" dashboard (in progress / completed), purchase history, course reviews
+- Completion certificates: auto-issued at 100%, public verification page, PDF download with QR code, LinkedIn share link
 
 **Instructors**
 - Dashboard with courses, students, average rating and revenue
@@ -33,7 +34,7 @@ Instructors create courses, lessons and quizzes, and follow their students' prog
 - Argon2 password hashing
 - REST API (`/api/`) with JWT auth: courses, lessons, reviews, categories, my enrollments, enroll action
 - Django admin for everything, `/health/` endpoint, WhiteNoise static files, 12-factor settings via env vars
-- 50 automated tests (auth, catalog, learning, instructor, API, query counts, security)
+- 55 automated tests (auth, catalog, learning, instructor, API, query counts, security, certificates)
 
 ---
 
@@ -121,8 +122,9 @@ All settings come from environment variables (see `.env.example`):
 └── elearning/                 # Django project root (manage.py)
     ├── elearning/settings.py  # env-driven settings
     ├── main/
-    │   ├── models.py          # User, Category, Course, Lesson, Quiz, Question,
-    │   │                      # Enrollment, LessonCompletion, QuizAttempt, Review, Payment
+    │   ├── models.py          # User, Category, Course, Lesson, Quiz, Question, Enrollment,
+    │   │                      # LessonCompletion, QuizAttempt, Review, Payment, Certificate
+    │   ├── certificates.py    # reportlab PDF renderer
     │   ├── services.py        # enroll(), grade_quiz(), progress helpers
     │   ├── views/             # auth · catalog · student · learning · instructor · api
     │   ├── serializers.py · api_urls.py
@@ -142,6 +144,8 @@ All settings come from environment variables (see `.env.example`):
 | POST | `/api/courses/{slug}/enroll/` | JWT / session (student) |
 | GET | `/api/me/enrollments/` | JWT / session |
 | GET | `/api/categories/` | public |
+
+Certificates: `/certificates/<code>/` (public verification page) and `/certificates/<code>/pdf/` (download, add `?inline=1` to preview).
 
 ---
 

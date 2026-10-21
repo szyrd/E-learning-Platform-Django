@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import secrets
 from decimal import Decimal
 
 from django.conf import settings
@@ -325,15 +326,64 @@ class Enrollment(models.Model):
         return min(100, round(done * 100 / total))
 
     def refresh_completion(self) -> None:
-        """Mark the enrollment complete when everything is done (and un-mark if not)."""
+        """Mark the enrollment complete when everything is done (and un-mark if not).
+
+        A certificate is issued the first time the learner completes the course and is
+        never revoked, even if the instructor later adds content.
+        """
         total = self.course.lessons.count() + self.course.quizzes.count()
         done = total > 0 and self.progress_percent() >= 100
         if done and not self.completed_at:
             self.completed_at = timezone.now()
             self.save(update_fields=["completed_at"])
+            Certificate.issue(self)
         elif not done and self.completed_at:
             self.completed_at = None
             self.save(update_fields=["completed_at"])
+
+    @property
+    def certificate_or_none(self):
+        return getattr(self, "certificate", None)
+
+
+class Certificate(models.Model):
+    """Proof of completion. The code is public and unguessable; anyone can verify it."""
+
+    ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"  # no 0/O/1/I
+
+    enrollment = models.OneToOneField(Enrollment, on_delete=models.CASCADE, related_name="certificate")
+    code = models.CharField(max_length=20, unique=True, editable=False)
+    issued_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-issued_at"]
+
+    def __str__(self) -> str:
+        return f"{self.code} · {self.enrollment}"
+
+    @classmethod
+    def generate_code(cls) -> str:
+        while True:
+            raw = "".join(secrets.choice(cls.ALPHABET) for _ in range(12))
+            code = f"LH-{raw[:4]}-{raw[4:8]}-{raw[8:]}"
+            if not cls.objects.filter(code=code).exists():
+                return code
+
+    @classmethod
+    def issue(cls, enrollment: "Enrollment") -> "Certificate":
+        cert, _ = cls.objects.get_or_create(enrollment=enrollment, defaults={"code": cls.generate_code()})
+        return cert
+
+    def get_absolute_url(self) -> str:
+        return reverse("certificate_verify", kwargs={"code": self.code})
+
+    @property
+    def user(self):
+        return self.enrollment.user
+
+    @property
+    def course(self):
+        return self.enrollment.course
 
 
 class LessonCompletion(models.Model):

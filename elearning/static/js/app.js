@@ -62,6 +62,17 @@
     syncMethod();
   }
 
+  // Copy-to-clipboard buttons (data-copy="#selector").
+  document.querySelectorAll("[data-copy]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var target = document.querySelector(btn.getAttribute("data-copy"));
+      if (!target) return;
+      var text = target.value || target.textContent;
+      var done = function () { var old = btn.innerHTML; btn.innerHTML = '<i class="bi bi-check2"></i>'; setTimeout(function () { btn.innerHTML = old; }, 1500); };
+      if (navigator.clipboard) { navigator.clipboard.writeText(text).then(done); } else { target.select(); document.execCommand("copy"); done(); }
+    });
+  });
+
   // Simple card-number formatting on checkout.
   var card = document.querySelector("input[name=card_number]");
   if (card) {

@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import auth, catalog, instructor, learning, student
+from .views import auth, catalog, certificates, instructor, learning, student
 
 urlpatterns = [
     # public catalog
@@ -21,6 +21,10 @@ urlpatterns = [
     path("courses/<slug:slug>/enroll/", student.enroll_course, name="enroll"),
     path("courses/<slug:slug>/checkout/", student.checkout, name="checkout"),
     path("courses/<slug:slug>/review/", student.submit_review, name="submit_review"),
+
+    # certificates (public verification)
+    path("certificates/<str:code>/", certificates.verify, name="certificate_verify"),
+    path("certificates/<str:code>/pdf/", certificates.download, name="certificate_pdf"),
 
     # learning
     path("learn/<slug:slug>/", learning.learn, name="learn"),

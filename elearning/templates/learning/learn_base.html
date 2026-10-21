@@ -38,6 +38,7 @@
     {% if enrollment and progress >= 100 %}
     <div class="p-3 text-center">
       <div class="text-success fw-semibold"><i class="bi bi-patch-check-fill me-1"></i>Course completed!</div>
+      {% if enrollment.certificate_or_none %}<a class="btn btn-primary btn-sm mt-2" href="{{ enrollment.certificate.get_absolute_url }}"><i class="bi bi-award me-1"></i>View certificate</a>{% endif %}
       <a class="btn btn-outline-primary btn-sm mt-2" href="{% url 'submit_review' course.slug %}">Leave a review</a>
     </div>
     {% endif %}

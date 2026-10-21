@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load course_extras %}
+{% block title %}Certificate {{ cert.code }} · {{ SITE_NAME }}{% endblock %}
+{% block meta_description %}{{ learner.display_name }} completed {{ course.title }} on {{ SITE_NAME }}.{% endblock %}
+{% block content %}
+<div class="container-xl section">
+  <div class="row g-4 justify-content-center">
+    <div class="col-lg-8">
+      <div class="cert-card">
+        <div class="cert-ribbon"><i class="bi bi-patch-check-fill me-1"></i>Verified certificate</div>
+        <div class="small-caps mt-3">Certificate of completion</div>
+        <p class="text-muted mb-1 mt-3">This certifies that</p>
+        <h1 class="cert-name">{{ learner.display_name }}</h1>
+        <p class="text-muted mb-1">has successfully completed the online course</p>
+        <h2 class="cert-course"><a href="{{ course.get_absolute_url }}">{{ course.title }}</a></h2>
+        <div class="text-muted small">{{ course.lessons.count }} lessons · {{ course.quizzes.count }} graded quiz{{ course.quizzes.count|pluralize:"zes" }} · {{ course.get_level_display }}{% if course.category %} · {{ course.category.name }}{% endif %}</div>
+        <div class="row text-center mt-4 g-3">
+          <div class="col-sm-4"><div class="cert-fact"><div class="label">Instructor</div><div class="value">{{ course.instructor.display_name }}</div></div></div>
+          <div class="col-sm-4"><div class="cert-fact"><div class="label">Issued</div><div class="value">{{ cert.issued_at|date:"F j, Y" }}</div></div></div>
+          <div class="col-sm-4"><div class="cert-fact"><div class="label">Certificate ID</div><div class="value"><code>{{ cert.code }}</code></div></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="card-form">
+        <h5 class="mb-3">{% if is_owner %}Your certificate{% else %}Share &amp; verify{% endif %}</h5>
+        <a class="btn btn-primary w-100 mb-2" href="{% url 'certificate_pdf' cert.code %}"><i class="bi bi-download me-1"></i>Download PDF</a>
+        <a class="btn btn-secondary w-100 mb-3" href="{% url 'certificate_pdf' cert.code %}?inline=1" target="_blank" rel="noopener"><i class="bi bi-eye me-1"></i>Preview PDF</a>
+        <label class="form-label">Verification link</label>
+        <div class="input-group mb-2">
+          <input class="form-control form-control-sm" type="text" value="{{ verify_url }}" readonly id="verify-url">
+          <button class="btn btn-soft btn-sm" type="button" data-copy="#verify-url"><i class="bi bi-clipboard"></i></button>
+        </div>
+        <div class="small text-muted">Anyone with this link can confirm the certificate is genuine. The ID is unique to this learner and course.</div>
+        {% if is_owner %}
+        <hr>
+        <a class="btn btn-outline-primary btn-sm w-100" href="https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name={{ course.title|urlencode }}&organizationName={{ SITE_NAME|urlencode }}&issueYear={{ cert.issued_at|date:'Y' }}&issueMonth={{ cert.issued_at|date:'n' }}&certUrl={{ verify_url|urlencode }}&certId={{ cert.code }}" target="_blank" rel="noopener"><i class="bi bi-linkedin me-1"></i>Add to LinkedIn</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
