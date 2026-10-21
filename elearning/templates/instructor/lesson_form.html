@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}{% if lesson %}Edit lesson{% else %}Add lesson{% endif %} · {{ course.title }}{% endblock %}
+{% block content %}
+<div class="container-xl section pt-4">
+  <a href="{% url 'manage_course' course.slug %}" class="small"><i class="bi bi-arrow-left me-1"></i>{{ course.title }}</a>
+  <h1 class="h3 mt-2 mb-4">{% if lesson %}Edit lesson{% else %}Add a lesson{% endif %}</h1>
+  <div class="row"><div class="col-lg-8">
+    <form method="post" class="card-form" novalidate>{% csrf_token %}
+      {% include "includes/form_field.html" with field=form.title %}
+      {% include "includes/form_field.html" with field=form.video_url %}
+      <div class="row"><div class="col-sm-4">{% include "includes/form_field.html" with field=form.duration_minutes %}</div><div class="col-sm-8 d-flex align-items-center pt-sm-4">{% include "includes/form_field.html" with field=form.is_preview %}</div></div>
+      {% include "includes/form_field.html" with field=form.content %}
+      <div class="d-flex gap-2">
+        <button class="btn btn-primary" type="submit">{% if lesson %}Save lesson{% else %}Save lesson{% endif %}</button>
+        {% if not lesson %}<button class="btn btn-secondary" type="submit" name="save_add_another" value="1">Save &amp; add another</button>{% endif %}
+      </div>
+    </form>
+  </div></div>
+</div>
+{% endblock %}

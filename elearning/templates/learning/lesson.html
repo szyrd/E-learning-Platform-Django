@@ -1,0 +1,28 @@
+{% extends "learning/learn_base.html" %}
+{% load course_extras %}
+{% block title %}{{ lesson.title }} · {{ course.title }}{% endblock %}
+{% block learn_content %}
+<h1 class="h3 mb-3">{{ lesson.title }}</h1>
+{% video_player lesson.video_url lesson.title %}
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mt-3 mb-4">
+  <div class="text-muted small"><i class="bi bi-clock me-1"></i>{{ lesson.duration_minutes|duration }}{% if lesson.is_preview %} · <span class="text-primary fw-semibold">Free preview</span>{% endif %}</div>
+  <div class="d-flex align-items-center gap-2">
+    {% if enrollment %}
+      {% if is_done %}
+        <span class="d-inline-flex align-items-center gap-2 text-success fw-semibold"><i class="bi bi-check-circle-fill"></i> Completed</span>
+        {% if next_item %}<a class="btn btn-primary ms-2" href="{% if next_item.kind == 'lesson' %}{% url 'lesson' course.slug next_item.obj.id %}{% else %}{% url 'quiz' course.slug next_item.obj.id %}{% endif %}">Next: {{ next_item.obj.title|truncatechars:28 }} <i class="bi bi-arrow-right"></i></a>{% endif %}
+      {% else %}
+        <form id="complete-lesson-form" method="post" action="{% url 'complete_lesson' course.slug lesson.id %}" data-next-url="{% if next_item %}{% if next_item.kind == 'lesson' %}{% url 'lesson' course.slug next_item.obj.id %}{% else %}{% url 'quiz' course.slug next_item.obj.id %}{% endif %}{% endif %}">{% csrf_token %}
+          <button class="btn btn-primary" type="submit"><i class="bi bi-check2 me-1"></i>Mark as complete</button>
+        </form>
+      {% endif %}
+    {% elif not user.is_authenticated or user.is_student %}
+      <a class="btn btn-primary" href="{{ course.get_absolute_url }}">Enroll to track progress</a>
+    {% endif %}
+  </div>
+</div>
+{% if lesson.content %}
+<h5 class="mb-2">Lesson notes</h5>
+<div class="lesson-notes">{{ lesson.content }}</div>
+{% endif %}
+{% endblock %}

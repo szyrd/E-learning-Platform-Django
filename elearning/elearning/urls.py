@@ -1,37 +1,33 @@
-"""
-URL configuration for elearning project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/5.1/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import path, include
+from django.http import JsonResponse
+from django.db import connection
+from django.urls import include, path
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-from main import views
 
-from django.contrib.auth.views import LoginView
-from main.views import redirect_to_login, CourseListView
+def health(request):
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+        return JsonResponse({"status": "ok"})
+    except Exception as exc:  # pragma: no cover - only hit when DB is down
+        return JsonResponse({"status": "error", "detail": str(exc)}, status=503)
+
 
 urlpatterns = [
-    path('', redirect_to_login, name='redirect_to_login'),
-    path('admin/', admin.site.urls),
-    # Login view
-    path('', include('main.urls')),
-
-    path('api-auth/', include('rest_framework.urls')),
-    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('api/courses/', CourseListView.as_view(), name='api-courses'),
+    path("admin/", admin.site.urls),
+    path("health/", health, name="health"),
+    path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
+    path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path("api/", include("main.api_urls")),
+    path("", include("main.urls")),
 ]
 
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+handler403 = "main.views.errors.forbidden"
+handler404 = "main.views.errors.not_found"
+handler500 = "main.views.errors.server_error"

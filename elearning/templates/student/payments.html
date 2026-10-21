@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Purchases · {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<div class="container-xl section">
+  <h1 class="h3 mb-3">Purchase history</h1>
+  <div class="table-lh">
+    <table class="table">
+      <thead><tr><th>Date</th><th>Course</th><th>Reference</th><th>Method</th><th class="text-end">Amount</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for p in payments %}
+        <tr><td>{{ p.created_at|date:"M j, Y" }}</td><td>{% if p.course %}<a href="{{ p.course.get_absolute_url }}">{{ p.course.title }}</a>{% else %}<span class="text-muted">Deleted course</span>{% endif %}</td><td><code>{{ p.reference }}</code></td><td>{{ p.get_method_display }}</td><td class="text-end fw-semibold">${{ p.amount|floatformat:2 }}</td><td><span class="badge {% if p.status == 'succeeded' %}bg-success{% else %}bg-danger{% endif %}">{{ p.get_status_display }}</span></td></tr>
+        {% empty %}<tr><td colspan="6" class="text-center text-muted py-4">No purchases yet.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Review · {{ course.title }}{% endblock %}
+{% block content %}
+<div class="container-xl section">
+  <div class="row justify-content-center"><div class="col-lg-6">
+    <a href="{{ course.get_absolute_url }}" class="small"><i class="bi bi-arrow-left me-1"></i>Back to course</a>
+    <h1 class="h3 mt-2 mb-1">{% if review %}Update your review{% else %}Rate this course{% endif %}</h1>
+    <p class="text-muted">{{ course.title }}</p>
+    <form method="post" class="card-form" novalidate>{% csrf_token %}
+      <label class="form-label">Your rating</label>
+      <div class="rating-input mb-1">
+        {% for radio in form.rating %}{{ radio.tag }}<label for="{{ radio.id_for_label }}" title="{{ radio.choice_label }}"><i class="bi bi-star-fill"></i></label>{% endfor %}
+      </div>
+      {% for error in form.rating.errors %}<div class="text-danger small mb-2">{{ error }}</div>{% endfor %}
+      {% include "includes/form_field.html" with field=form.comment %}
+      <button class="btn btn-primary" type="submit">{% if review %}Save review{% else %}Submit review{% endif %}</button>
+    </form>
+  </div></div>
+</div>
+{% endblock %}

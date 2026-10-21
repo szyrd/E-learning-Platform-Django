@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Checkout · {{ course.title }}{% endblock %}
+{% block content %}
+<div class="container-xl section">
+  <div class="row g-4 justify-content-center">
+    <div class="col-lg-7">
+      <h1 class="h3 mb-1">Checkout</h1>
+      <p class="text-muted">This is a demo store: no real charge is made. Use card <code>4242 4242 4242 4242</code>, any future expiry and any CVC.</p>
+      <form method="post" class="card-form" novalidate>{% csrf_token %}
+        {% if form.non_field_errors %}<div class="alert alert-danger py-2">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+        <div class="mb-3">
+          <label class="form-label">Payment method</label>
+          <div class="row g-2 role-choice">
+            {% for radio in form.method %}<div class="col-6">{{ radio.tag }}<label for="{{ radio.id_for_label }}"><i class="bi {% if radio.data.value == 'card' %}bi-credit-card-2-front{% else %}bi-paypal{% endif %} me-1 text-primary"></i>{{ radio.choice_label }}</label></div>{% endfor %}
+          </div>
+        </div>
+        <div id="card-fields">
+          {% include "includes/form_field.html" with field=form.cardholder %}
+          {% include "includes/form_field.html" with field=form.card_number %}
+          <div class="row"><div class="col-6">{% include "includes/form_field.html" with field=form.expiry %}</div><div class="col-6">{% include "includes/form_field.html" with field=form.cvc %}</div></div>
+        </div>
+        <button class="btn btn-primary btn-lg w-100 mt-2" type="submit"><i class="bi bi-lock-fill me-1"></i>Pay ${{ course.price|floatformat:2 }}</button>
+        <div class="small text-muted text-center mt-2">30-day money-back guarantee (simulated)</div>
+      </form>
+    </div>
+    <div class="col-lg-4">
+      <div class="enroll-card">
+        <div class="cover">{% include "includes/course_cover.html" with course=course %}</div>
+        <div class="inner">
+          <div class="small text-muted">{{ course.category.name|default:"Course" }}</div>
+          <div class="fs-5 fw-semibold">{{ course.title }}</div>
+          <div class="small text-muted mb-3">by {{ course.instructor.display_name }}</div>
+          <div class="d-flex justify-content-between border-top pt-3"><span>Course price</span><span class="fw-semibold">${{ course.price|floatformat:2 }}</span></div>
+          <div class="d-flex justify-content-between"><span>Tax</span><span class="fw-semibold">$0.00</span></div>
+          <div class="d-flex justify-content-between fs-5 fw-bold border-top mt-2 pt-2"><span>Total</span><span>${{ course.price|floatformat:2 }}</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  (function(){
+    var radios = document.querySelectorAll('input[name=method]'); var fields = document.getElementById('card-fields');
+    function sync(){ var v = document.querySelector('input[name=method]:checked'); fields.style.display = (v && v.value === 'card') ? '' : 'none'; }
+    radios.forEach(function(r){ r.addEventListener('change', sync); }); sync();
+  })();
+</script>
+{% endblock %}

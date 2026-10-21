@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load course_extras %}
+{% block title %}{% if q %}“{{ q }}” · {% endif %}Courses · {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<div class="container-xl section pt-4">
+  <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+    <div>
+      <h1 class="section-title mb-1">{% if q %}Results for “{{ q }}”{% elif category %}{% for c in categories %}{% if c.slug == category %}{{ c.name }}{% endif %}{% endfor %}{% else %}All courses{% endif %}</h1>
+      <div class="text-muted">{{ total }} course{{ total|pluralize }}</div>
+    </div>
+    <form method="get" class="d-flex align-items-center gap-2">
+      {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
+      {% if category %}<input type="hidden" name="category" value="{{ category }}">{% endif %}
+      {% if level %}<input type="hidden" name="level" value="{{ level }}">{% endif %}
+      {% if price %}<input type="hidden" name="price" value="{{ price }}">{% endif %}
+      <label class="small text-muted" for="sort">Sort by</label>
+      <select class="form-select form-select-sm w-auto" id="sort" name="sort" onchange="this.form.submit()">
+        <option value="popular" {% if sort == 'popular' %}selected{% endif %}>Most popular</option>
+        <option value="rating" {% if sort == 'rating' %}selected{% endif %}>Highest rated</option>
+        <option value="newest" {% if sort == 'newest' %}selected{% endif %}>Newest</option>
+        <option value="price_asc" {% if sort == 'price_asc' %}selected{% endif %}>Price: low to high</option>
+        <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>Price: high to low</option>
+      </select>
+    </form>
+  </div>
+
+  <div class="d-flex flex-wrap gap-2 mb-4">
+    <a class="pill {% if not category %}active{% endif %}" href="{% query_replace category='' page='' %}">All</a>
+    {% for c in categories %}<a class="pill {% if c.slug == category %}active{% endif %}" href="{% query_replace category=c.slug page='' %}"><i class="bi {{ c.icon }}"></i>{{ c.name }}</a>{% endfor %}
+  </div>
+
+  <div class="row g-4">
+    <aside class="col-lg-3">
+      <form method="get" class="filter-panel">
+        {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
+        {% if category %}<input type="hidden" name="category" value="{{ category }}">{% endif %}
+        <input type="hidden" name="sort" value="{{ sort }}">
+        <h6>Level</h6>
+        <div class="form-check"><input class="form-check-input" type="radio" name="level" value="" id="lvl-all" {% if not level %}checked{% endif %} onchange="this.form.submit()"><label class="form-check-label" for="lvl-all">All levels</label></div>
+        {% for value, label in levels %}<div class="form-check"><input class="form-check-input" type="radio" name="level" value="{{ value }}" id="lvl-{{ value }}" {% if level == value %}checked{% endif %} onchange="this.form.submit()"><label class="form-check-label" for="lvl-{{ value }}">{{ label }}</label></div>{% endfor %}
+        <h6>Price</h6>
+        <div class="form-check"><input class="form-check-input" type="radio" name="price" value="" id="pr-all" {% if not price %}checked{% endif %} onchange="this.form.submit()"><label class="form-check-label" for="pr-all">Any</label></div>
+        <div class="form-check"><input class="form-check-input" type="radio" name="price" value="free" id="pr-free" {% if price == 'free' %}checked{% endif %} onchange="this.form.submit()"><label class="form-check-label" for="pr-free">Free</label></div>
+        <div class="form-check"><input class="form-check-input" type="radio" name="price" value="paid" id="pr-paid" {% if price == 'paid' %}checked{% endif %} onchange="this.form.submit()"><label class="form-check-label" for="pr-paid">Paid</label></div>
+        {% if q or category or level or price %}<a class="btn btn-soft btn-sm w-100 mt-3" href="{% url 'course_list' %}">Clear filters</a>{% endif %}
+      </form>
+    </aside>
+    <div class="col-lg-9">
+      <div class="row g-4">
+        {% for course in page %}<div class="col-sm-6 col-xl-4">{% include "includes/course_card.html" with course=course %}</div>
+        {% empty %}<div class="col-12"><div class="empty-state"><i class="bi bi-search d-block mb-2"></i><div class="fw-semibold text-dark">No courses match your filters</div><div>Try a different keyword or clear the filters.</div></div></div>{% endfor %}
+      </div>
+      {% include "includes/pagination.html" %}
+    </div>
+  </div>
+</div>
+{% endblock %}

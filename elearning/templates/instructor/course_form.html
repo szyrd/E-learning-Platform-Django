@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}{% if course %}Edit {{ course.title }}{% else %}New course{% endif %} · {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<div class="container-xl section pt-4">
+  <a href="{% if course %}{% url 'manage_course' course.slug %}{% else %}{% url 'instructor_dashboard' %}{% endif %}" class="small"><i class="bi bi-arrow-left me-1"></i>Back</a>
+  <h1 class="h3 mt-2 mb-4">{% if course %}Edit course{% else %}Create a new course{% endif %}</h1>
+  <form method="post" enctype="multipart/form-data" novalidate>{% csrf_token %}
+    {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+    <div class="row g-4">
+      <div class="col-lg-8">
+        <div class="card-form mb-4">
+          <h5 class="mb-3">Basics</h5>
+          {% include "includes/form_field.html" with field=form.title %}
+          {% include "includes/form_field.html" with field=form.subtitle %}
+          {% include "includes/form_field.html" with field=form.description %}
+        </div>
+        <div class="card-form">
+          <h5 class="mb-3">Landing page</h5>
+          {% include "includes/form_field.html" with field=form.what_you_learn %}
+          {% include "includes/form_field.html" with field=form.requirements %}
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="card-form mb-4">
+          <h5 class="mb-3">Settings</h5>
+          {% include "includes/form_field.html" with field=form.category %}
+          {% include "includes/form_field.html" with field=form.level %}
+          {% include "includes/form_field.html" with field=form.language %}
+          {% include "includes/form_field.html" with field=form.price %}
+          <div class="form-text mb-3">Set 0 for a free course.</div>
+          {% include "includes/form_field.html" with field=form.thumbnail %}
+          {% if course and course.thumbnail %}<img src="{{ course.thumbnail.url }}" class="img-fluid rounded mb-3" alt="">{% endif %}
+          {% include "includes/form_field.html" with field=form.is_published %}
+        </div>
+        <button class="btn btn-primary w-100 btn-lg" type="submit">{% if course %}Save changes{% else %}Create course{% endif %}</button>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}

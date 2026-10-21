@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% load course_extras humanize %}
+{% block title %}{{ course.title }} · {{ SITE_NAME }}{% endblock %}
+{% block meta_description %}{{ course.subtitle|default:course.description|truncatechars:150 }}{% endblock %}
+{% block content %}
+<section class="course-hero">
+  <div class="container-xl">
+    <div class="row g-4">
+      <div class="col-lg-8">
+        <div class="crumbs small mb-3"><a href="{% url 'course_list' %}">Courses</a>{% if course.category %} <span class="mx-1 text-white-50">/</span> <a href="{{ course.category.get_absolute_url }}">{{ course.category.name }}</a>{% endif %}</div>
+        {% if not course.is_published %}<span class="badge bg-warning text-dark mb-2">Draft · only you can see this</span>{% endif %}
+        <h1>{{ course.title }}</h1>
+        {% if course.subtitle %}<p class="lead">{{ course.subtitle }}</p>{% endif %}
+        <div class="d-flex align-items-center gap-2 mb-3">
+          <span class="avatar" style="background:#3587fc">{{ course.instructor.initials }}</span>
+          <div><div class="small text-white-50">Instructor</div><div class="fw-semibold">{{ course.instructor.display_name }}</div></div>
+        </div>
+        <div class="meta-row">
+          {% if course.rating %}<span><span class="fw-bold">{{ course.rating }}</span> {{ course.rating|stars }} <span class="text-white-50">({{ course.review_count|intcomma }} review{{ course.review_count|pluralize }})</span></span>{% endif %}
+          <span><i class="bi bi-people me-1"></i>{{ course.students|intcomma }} already enrolled</span>
+          <span><i class="bi bi-bar-chart me-1"></i>{{ course.get_level_display }}</span>
+          <span><i class="bi bi-translate me-1"></i>{{ course.language }}</span>
+          <span><i class="bi bi-calendar3 me-1"></i>Updated {{ course.updated_at|date:"M Y" }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="container-xl">
+  <div class="row g-4">
+    <div class="col-lg-8 py-4">
+      <div class="facts mb-4">
+        <div><div class="label">Lessons</div><div class="value">{{ course.lessons.count }}</div></div>
+        <div><div class="label">Quizzes</div><div class="value">{{ course.quizzes.count }}</div></div>
+        <div><div class="label">Total video</div><div class="value">{{ course.total_minutes|duration }}</div></div>
+        <div><div class="label">Level</div><div class="value">{{ course.get_level_display }}</div></div>
+        <div><div class="label">Price</div><div class="value">{% if course.is_free %}Free{% else %}${{ course.price|floatformat:2 }}{% endif %}</div></div>
+      </div>
+
+      {% if course.outcomes %}
+      <div class="mb-5">
+        <h3 class="mb-3">What you'll learn</h3>
+        <ul class="outcomes ps-0">{% for o in course.outcomes %}<li>{{ o }}</li>{% endfor %}</ul>
+      </div>
+      {% endif %}
+
+      <div class="mb-5">
+        <h3 class="mb-3">About this course</h3>
+        <div class="fs-6" style="white-space: pre-line">{{ course.description }}</div>
+        {% if course.prerequisites %}
+          <h5 class="mt-4">Requirements</h5>
+          <ul class="text-muted">{% for r in course.prerequisites %}<li>{{ r }}</li>{% endfor %}</ul>
+        {% endif %}
+      </div>
+
+      <div class="mb-5" id="syllabus">
+        <div class="d-flex justify-content-between align-items-end mb-3">
+          <h3 class="mb-0">Syllabus</h3>
+          <span class="text-muted small">{{ outline|length }} item{{ outline|length|pluralize }} · {{ course.total_minutes|duration }}</span>
+        </div>
+        {% if outline %}
+        <div class="syllabus">
+          {% for item in outline %}
+          <div class="item {% if item.done %}done{% endif %}">
+            <span class="idx">{% if item.done %}<i class="bi bi-check-lg"></i>{% else %}{{ forloop.counter }}{% endif %}</span>
+            <div class="flex-grow-1">
+              <div class="fw-semibold">
+                {% if item.kind == "lesson" and not item.locked %}<a href="{% url 'lesson' course.slug item.obj.id %}">{{ item.obj.title }}</a>
+                {% elif item.kind == "quiz" and not item.locked %}<a href="{% url 'quiz' course.slug item.obj.id %}">{{ item.obj.title }}</a>
+                {% else %}{{ item.obj.title }}{% endif %}
+              </div>
+              <div class="small text-muted">
+                {% if item.kind == "lesson" %}<i class="bi bi-play-circle me-1"></i>Video · {{ item.obj.duration_minutes|duration }}{% if item.obj.is_preview %} · <span class="text-primary fw-semibold">Free preview</span>{% endif %}
+                {% else %}<i class="bi bi-patch-question me-1"></i>Quiz · {{ item.obj.questions.count }} question{{ item.obj.questions.count|pluralize }} · pass mark {{ item.obj.pass_mark }}%{% endif %}
+              </div>
+            </div>
+            {% if item.locked %}<i class="bi bi-lock text-mid"></i>{% elif item.kind == "lesson" %}<a class="btn btn-sm btn-soft" href="{% url 'lesson' course.slug item.obj.id %}">{% if item.done %}Rewatch{% else %}Watch{% endif %}</a>{% else %}<a class="btn btn-sm btn-soft" href="{% url 'quiz' course.slug item.obj.id %}">{% if item.done %}Review{% else %}Start{% endif %}</a>{% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}<div class="empty-state"><i class="bi bi-journal-x d-block mb-2"></i>The instructor hasn't added content yet.</div>{% endif %}
+      </div>
+
+      <div class="mb-5">
+        <h3 class="mb-3">Instructor</h3>
+        <div class="instructor-card d-flex gap-3">
+          <span class="avatar avatar-lg">{{ course.instructor.initials }}</span>
+          <div>
+            <div class="fs-5 fw-semibold">{{ course.instructor.display_name }}</div>
+            {% if course.instructor.headline %}<div class="text-muted">{{ course.instructor.headline }}</div>{% endif %}
+            <div class="small text-muted mt-1"><i class="bi bi-journal-bookmark me-1"></i>{{ instructor_course_count }} course{{ instructor_course_count|pluralize }} · <i class="bi bi-people me-1"></i>{{ instructor_student_count|intcomma }} learner{{ instructor_student_count|pluralize }}</div>
+            {% if course.instructor.bio %}<p class="mt-2 mb-0">{{ course.instructor.bio }}</p>{% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-5" id="reviews">
+        <div class="d-flex justify-content-between align-items-end mb-3">
+          <h3 class="mb-0">Learner reviews</h3>
+          {% if enrollment %}<a class="btn btn-sm btn-outline-primary" href="{% url 'submit_review' course.slug %}"><i class="bi bi-pencil me-1"></i>Write a review</a>{% endif %}
+        </div>
+        {% if course.review_count %}
+        <div class="row g-4 align-items-center mb-3">
+          <div class="col-md-3 text-center"><div class="display-5 fw-bold">{{ course.rating }}</div>{{ course.rating|stars }}<div class="small text-muted">{{ course.review_count }} review{{ course.review_count|pluralize }}</div></div>
+          <div class="col-md-9">
+            {% for row in rating_breakdown %}
+            <div class="d-flex align-items-center gap-2 small mb-1"><span style="width:52px">{{ row.star }} star{{ row.star|pluralize }}</span><div class="rating-bar flex-grow-1"><span style="width:{{ row.pct }}%"></span></div><span class="text-muted" style="width:36px">{{ row.pct }}%</span></div>
+            {% endfor %}
+          </div>
+        </div>
+        {% for r in reviews %}
+        <div class="review d-flex gap-3">
+          <span class="avatar">{{ r.user.initials }}</span>
+          <div><div class="fw-semibold">{{ r.user.display_name }} <span class="text-muted fw-normal small ms-1">{{ r.created_at|naturaltime }}</span></div>{{ r.rating|stars }}{% if r.comment %}<p class="mb-0 mt-1">{{ r.comment }}</p>{% endif %}</div>
+        </div>
+        {% endfor %}
+        {% else %}<div class="empty-state"><i class="bi bi-chat-square-heart d-block mb-2"></i>No reviews yet.{% if enrollment %} Be the first to share your experience.{% endif %}</div>{% endif %}
+      </div>
+    </div>
+
+    <aside class="col-lg-4">
+      <div class="enroll-card sticky-top-offset pull-up">
+        <div class="cover">{% include "includes/course_cover.html" with course=course %}</div>
+        <div class="inner">
+          {% if is_owner %}
+            <div class="small-caps mb-2">You teach this course</div>
+            <a class="btn btn-primary w-100 mb-2" href="{% url 'manage_course' course.slug %}"><i class="bi bi-sliders me-1"></i>Manage course</a>
+            <a class="btn btn-secondary w-100" href="{% url 'learn' course.slug %}">Preview as learner</a>
+          {% elif enrollment %}
+            <div class="d-flex justify-content-between small mb-1"><span class="fw-semibold">Your progress</span><span>{{ enrollment.progress_percent }}%</span></div>
+            <div class="progress mb-3"><div class="progress-bar {% if enrollment.is_completed %}bg-success{% endif %}" style="width:{{ enrollment.progress_percent }}%"></div></div>
+            <a class="btn btn-primary w-100 btn-lg" href="{% url 'learn' course.slug %}">{% if enrollment.is_completed %}Review course{% elif enrollment.progress_percent %}Continue learning{% else %}Start learning{% endif %} <i class="bi bi-arrow-right ms-1"></i></a>
+            {% if enrollment.is_completed %}<div class="text-success small fw-semibold mt-2 text-center"><i class="bi bi-patch-check-fill me-1"></i>Completed {{ enrollment.completed_at|date:"M j, Y" }}</div>{% endif %}
+          {% else %}
+            <div class="d-flex align-items-baseline gap-2 mb-3">
+              {% if course.is_free %}<span class="fs-3 fw-bold text-success">Free</span>{% else %}<span class="fs-3 fw-bold">${{ course.price|floatformat:2 }}</span><span class="text-muted small">one-time · lifetime access</span>{% endif %}
+            </div>
+            {% if user.is_authenticated and user.is_instructor %}
+              <div class="alert alert-light border small mb-0">Instructor accounts can't enroll. Log in as a student to take this course.</div>
+            {% elif user.is_authenticated %}
+              <form method="post" action="{% url 'enroll' course.slug %}">{% csrf_token %}
+                <button class="btn btn-primary w-100 btn-lg" type="submit">{% if course.is_free %}Enroll for free{% else %}Buy now{% endif %}</button>
+              </form>
+            {% else %}
+              <a class="btn btn-primary w-100 btn-lg" href="{% url 'login' %}?next={{ request.path|urlencode }}">{% if course.is_free %}Enroll for free{% else %}Buy now{% endif %}</a>
+              <div class="small text-muted text-center mt-2">Log in or create a free account</div>
+            {% endif %}
+          {% endif %}
+          <hr>
+          <div class="small-caps mb-2">This course includes</div>
+          <ul class="list-unstyled small d-grid gap-2 mb-0">
+            <li><i class="bi bi-play-btn text-primary me-2"></i>{{ course.total_minutes|duration }} of on-demand video</li>
+            <li><i class="bi bi-patch-question text-primary me-2"></i>{{ course.quizzes.count }} graded quiz{{ course.quizzes.count|pluralize:"zes" }}</li>
+            <li><i class="bi bi-infinity text-primary me-2"></i>Full lifetime access</li>
+            <li><i class="bi bi-phone text-primary me-2"></i>Learn on any device</li>
+            <li><i class="bi bi-award text-primary me-2"></i>Completion tracking</li>
+          </ul>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  {% if related %}
+  <section class="section pt-2">
+    <h3 class="mb-3">More in {{ course.category.name }}</h3>
+    <div class="row g-4">{% for c in related %}<div class="col-sm-6 col-lg-4">{% include "includes/course_card.html" with course=c %}</div>{% endfor %}</div>
+  </section>
+  {% endif %}
+</div>
+{% endblock %}

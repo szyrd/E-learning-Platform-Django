@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block title %}Students · {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<div class="container-xl section pt-4">
+  <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-3">
+    <div><h1 class="h3 mb-1">Students</h1><div class="text-muted">{{ rows|length }} enrollment{{ rows|length|pluralize }}</div></div>
+    <form method="get" class="d-flex align-items-center gap-2"><label class="small text-muted">Course</label><select name="course" class="form-select form-select-sm w-auto" onchange="this.form.submit()"><option value="">All courses</option>{% for c in courses %}<option value="{{ c.slug }}" {% if c.slug == course_slug %}selected{% endif %}>{{ c.title }}</option>{% endfor %}</select></form>
+  </div>
+  <div class="table-lh">
+    <table class="table">
+      <thead><tr><th>Student</th><th>Course</th><th>Enrolled</th><th style="width:220px">Progress</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for r in rows %}
+        <tr>
+          <td><div class="d-flex align-items-center gap-2"><span class="avatar">{{ r.e.user.initials }}</span><div><div class="fw-semibold">{{ r.e.user.display_name }}</div><div class="small text-muted">{{ r.e.user.email }}</div></div></div></td>
+          <td><a href="{% url 'manage_course' r.e.course.slug %}">{{ r.e.course.title }}</a></td>
+          <td class="text-muted">{{ r.e.enrolled_at|naturaltime }}</td>
+          <td><div class="d-flex align-items-center gap-2"><div class="progress flex-grow-1"><div class="progress-bar {% if r.progress >= 100 %}bg-success{% endif %}" style="width:{{ r.progress }}%"></div></div><span class="small fw-semibold" style="width:36px">{{ r.progress }}%</span></div></td>
+          <td>{% if r.e.is_completed %}<span class="badge bg-success">Completed</span>{% else %}<span class="badge bg-primary">In progress</span>{% endif %}</td>
+        </tr>
+        {% empty %}<tr><td colspan="5" class="text-center text-muted py-4">No students yet.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

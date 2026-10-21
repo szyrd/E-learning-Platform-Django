@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% load course_extras humanize %}
+{% block title %}Manage · {{ course.title }}{% endblock %}
+{% block content %}
+<div class="bg-canvas-alt border-bottom">
+  <div class="container-xl py-4">
+    <a href="{% url 'instructor_dashboard' %}" class="small"><i class="bi bi-arrow-left me-1"></i>Dashboard</a>
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mt-1">
+      <div><h1 class="h3 mb-1">{{ course.title }} {% if not course.is_published %}<span class="badge bg-secondary align-middle fs-6">Draft</span>{% endif %}</h1><div class="text-muted small">{{ course.category.name|default:"No category" }} · {{ course.get_level_display }} · {% if course.is_free %}Free{% else %}${{ course.price|floatformat:2 }}{% endif %}</div></div>
+      <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-secondary" href="{{ course.get_absolute_url }}"><i class="bi bi-eye me-1"></i>View</a>
+        <a class="btn btn-secondary" href="{% url 'course_edit' course.slug %}"><i class="bi bi-pencil me-1"></i>Edit details</a>
+        <form method="post" action="{% url 'course_toggle_publish' course.slug %}">{% csrf_token %}<button class="btn {% if course.is_published %}btn-outline-dark{% else %}btn-primary{% endif %}" type="submit">{% if course.is_published %}Unpublish{% else %}Publish{% endif %}</button></form>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="container-xl section pt-4">
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3"><div class="stat-tile"><div class="label">Students</div><div class="value">{{ stats.students }}</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat-tile"><div class="label">Completed</div><div class="value">{{ stats.completed }}</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat-tile"><div class="label">Rating</div><div class="value">{{ rating|default:"—" }}</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat-tile"><div class="label">Content</div><div class="value">{{ course.total_minutes|duration }}</div></div></div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <div class="d-flex justify-content-between align-items-end mb-2"><h2 class="h5 mb-0">Lessons <span class="text-muted fw-normal">({{ lessons|length }})</span></h2><a class="btn btn-primary btn-sm" href="{% url 'lesson_create' course.slug %}"><i class="bi bi-plus-lg me-1"></i>Add lesson</a></div>
+      <div class="manage-list mb-4">
+        {% for l in lessons %}
+        <div class="row-item">
+          <div class="d-flex flex-column">
+            <form method="post" action="{% url 'lesson_move' l.id 'up' %}">{% csrf_token %}<button class="btn btn-link p-0 text-muted lh-1" {% if forloop.first %}disabled{% endif %} title="Move up"><i class="bi bi-chevron-up"></i></button></form>
+            <form method="post" action="{% url 'lesson_move' l.id 'down' %}">{% csrf_token %}<button class="btn btn-link p-0 text-muted lh-1" {% if forloop.last %}disabled{% endif %} title="Move down"><i class="bi bi-chevron-down"></i></button></form>
+          </div>
+          <span class="text-muted small" style="width:24px">{{ forloop.counter }}</span>
+          <div class="flex-grow-1"><div class="fw-semibold">{{ l.title }}</div><div class="small text-muted"><i class="bi bi-play-circle me-1"></i>{{ l.duration_minutes|duration }}{% if l.is_preview %} · <span class="text-primary">Preview</span>{% endif %}{% if not l.video_url %} · <span class="text-warning">No video</span>{% endif %}</div></div>
+          <a class="icon-btn" href="{% url 'lesson' course.slug l.id %}" title="Open"><i class="bi bi-box-arrow-up-right"></i></a>
+          <a class="icon-btn" href="{% url 'lesson_edit' l.id %}" title="Edit"><i class="bi bi-pencil"></i></a>
+          <form method="post" action="{% url 'lesson_delete' l.id %}" data-confirm="Delete lesson “{{ l.title }}”? Student progress for it will be lost.">{% csrf_token %}<button class="icon-btn danger" title="Delete"><i class="bi bi-trash"></i></button></form>
+        </div>
+        {% empty %}<div class="empty-state border-0"><i class="bi bi-camera-video d-block mb-2"></i>No lessons yet. <a href="{% url 'lesson_create' course.slug %}">Add the first one.</a></div>{% endfor %}
+      </div>
+
+      <div class="d-flex justify-content-between align-items-end mb-2"><h2 class="h5 mb-0">Quizzes <span class="text-muted fw-normal">({{ quizzes|length }})</span></h2><a class="btn btn-primary btn-sm" href="{% url 'quiz_create' course.slug %}"><i class="bi bi-plus-lg me-1"></i>Add quiz</a></div>
+      <div class="manage-list">
+        {% for q in quizzes %}
+        <div class="row-item">
+          <span class="text-muted small" style="width:24px">{{ forloop.counter }}</span>
+          <div class="flex-grow-1"><div class="fw-semibold">{{ q.title }}</div><div class="small text-muted"><i class="bi bi-patch-question me-1"></i>{{ q.questions.count }} question{{ q.questions.count|pluralize }} · pass mark {{ q.pass_mark }}%{% if not q.questions.count %} · <span class="text-warning">Empty</span>{% endif %}</div></div>
+          <a class="btn btn-soft btn-sm" href="{% url 'manage_quiz' q.id %}">Questions</a>
+          <a class="icon-btn" href="{% url 'quiz_edit' q.id %}" title="Edit"><i class="bi bi-pencil"></i></a>
+          <form method="post" action="{% url 'quiz_delete' q.id %}" data-confirm="Delete quiz “{{ q.title }}” and all its attempts?">{% csrf_token %}<button class="icon-btn danger" title="Delete"><i class="bi bi-trash"></i></button></form>
+        </div>
+        {% empty %}<div class="empty-state border-0"><i class="bi bi-patch-question d-block mb-2"></i>No quizzes yet. <a href="{% url 'quiz_create' course.slug %}">Create one.</a></div>{% endfor %}
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <h2 class="h5 mb-2">Latest reviews</h2>
+      <div class="card-form p-0 mb-4">
+        {% for r in reviews %}<div class="p-3 {% if not forloop.last %}border-bottom{% endif %}"><div class="d-flex justify-content-between"><span class="fw-semibold">{{ r.user.display_name }}</span>{{ r.rating|stars }}</div>{% if r.comment %}<div class="small mt-1">{{ r.comment }}</div>{% endif %}<div class="small text-muted">{{ r.created_at|naturaltime }}</div></div>
+        {% empty %}<div class="p-4 text-center text-muted small">No reviews yet.</div>{% endfor %}
+      </div>
+      <div class="card-form border-danger-subtle">
+        <h6 class="text-danger">Danger zone</h6>
+        <p class="small text-muted">Deleting a course removes its lessons, quizzes, enrollments and reviews permanently.</p>
+        <form method="post" action="{% url 'course_delete' course.slug %}" data-confirm="Permanently delete “{{ course.title }}”? This cannot be undone.">{% csrf_token %}<button class="btn btn-outline-danger btn-sm w-100" type="submit"><i class="bi bi-trash me-1"></i>Delete course</button></form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

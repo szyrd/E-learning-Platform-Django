@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block content %}
+<section class="hero">
+  <div class="container-xl">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-6">
+        <div class="small-caps text-primary mb-3">Online learning platform</div>
+        <h1>Learn skills that move your career forward.</h1>
+        <p class="lead mt-3">Courses in data science, software, design and business from practitioners who do this work every day. Start for free, learn at your own pace.</p>
+        <form action="{% url 'course_list' %}" method="get" class="lh-search mt-4">
+          <input class="form-control form-control-lg" type="search" name="q" placeholder="Try “Python”, “UX” or “Django”" aria-label="Search courses">
+          <button class="btn btn-primary" type="submit" aria-label="Search"><i class="bi bi-search"></i></button>
+        </form>
+        <div class="d-flex flex-wrap gap-2 mt-4">
+          <a class="btn btn-primary btn-lg" href="{% url 'course_list' %}">Explore courses</a>
+          {% if not user.is_authenticated %}<a class="btn btn-secondary btn-lg" href="{% url 'register' %}">Join for free</a>{% endif %}
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="hero-art">
+          <div class="row g-3 position-relative" style="z-index:1">
+            <div class="col-6"><div class="mini-card"><div class="stat">{{ stats.courses }}</div><div class="text-white-50">Courses</div></div></div>
+            <div class="col-6"><div class="mini-card"><div class="stat">{{ stats.instructors }}</div><div class="text-white-50">Expert instructors</div></div></div>
+            <div class="col-6"><div class="mini-card"><div class="stat">{{ stats.students|default:0 }}</div><div class="text-white-50">Learners</div></div></div>
+            <div class="col-6"><div class="mini-card"><div class="stat">4.7<i class="bi bi-star-fill fs-5 ms-1" style="color:#f2a900"></i></div><div class="text-white-50">Average rating</div></div></div>
+            <div class="col-12">
+              <div class="mini-card d-flex align-items-center gap-3">
+                <span class="avatar" style="background:#3587fc">AS</span>
+                <div><div class="fw-semibold">“The messy-data lesson alone was worth it.”</div><div class="small text-white-50">Sam, Python for Data Analysis</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section pt-4">
+  <div class="container-xl">
+    <h2 class="section-title">Browse by category</h2>
+    <p class="section-sub">Find the right path for your goals.</p>
+    <div class="row g-3">
+      {% for c in categories %}
+      <div class="col-6 col-md-4 col-lg-3">
+        <a class="cat-card" href="{{ c.get_absolute_url }}">
+          <span class="cat-icon" style="background: {{ c.color }}"><i class="bi {{ c.icon }}"></i></span>
+          <span><span class="fw-semibold d-block">{{ c.name }}</span><span class="small text-muted">{{ c.n }} course{{ c.n|pluralize }}</span></span>
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section bg-canvas-alt">
+  <div class="container-xl">
+    <div class="d-flex justify-content-between align-items-end mb-3">
+      <div><h2 class="section-title">Most popular</h2><p class="section-sub mb-0">Loved by learners this month.</p></div>
+      <a href="{% url 'course_list' %}?sort=popular" class="fw-semibold">See all <i class="bi bi-arrow-right"></i></a>
+    </div>
+    <div class="row g-4">
+      {% for course in featured %}<div class="col-sm-6 col-lg-4">{% include "includes/course_card.html" with course=course %}</div>{% empty %}<div class="col-12"><div class="empty-state"><i class="bi bi-inbox d-block mb-2"></i>No courses yet. Run <code>manage.py seed_demo</code> to load demo data.</div></div>{% endfor %}
+    </div>
+  </div>
+</section>
+
+{% if newest %}
+<section class="section">
+  <div class="container-xl">
+    <div class="d-flex justify-content-between align-items-end mb-3">
+      <div><h2 class="section-title">New on {{ SITE_NAME }}</h2><p class="section-sub mb-0">Fresh courses just published.</p></div>
+      <a href="{% url 'course_list' %}?sort=newest" class="fw-semibold">See all <i class="bi bi-arrow-right"></i></a>
+    </div>
+    <div class="row g-4">{% for course in newest %}<div class="col-sm-6 col-lg-4">{% include "includes/course_card.html" with course=course %}</div>{% endfor %}</div>
+  </div>
+</section>
+{% endif %}
+
+<section class="section pt-0">
+  <div class="container-xl">
+    <div class="cta-band d-lg-flex align-items-center justify-content-between gap-4">
+      <div><h2 class="mb-2">Share what you know. Become an instructor.</h2><p class="mb-0 text-white-50 fs-5">Create a course with lessons and quizzes in minutes, reach learners worldwide and track their progress.</p></div>
+      <a class="btn btn-light btn-lg mt-3 mt-lg-0 flex-shrink-0" href="{% if user.is_authenticated %}{% url 'dashboard' %}{% else %}{% url 'register' %}{% endif %}">Start teaching</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

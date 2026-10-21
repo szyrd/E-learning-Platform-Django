@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Profile · {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<div class="container-xl section">
+  <div class="row g-4">
+    <div class="col-lg-4">
+      <div class="card-form text-center">
+        <span class="avatar avatar-xl mx-auto mb-3">{{ user.initials }}</span>
+        <h4 class="mb-0">{{ user.display_name }}</h4>
+        <div class="text-muted">{{ user.get_role_display }} · joined {{ user.date_joined|date:"M Y" }}</div>
+        {% if user.headline %}<div class="mt-2">{{ user.headline }}</div>{% endif %}
+      </div>
+    </div>
+    <div class="col-lg-8">
+      <div class="card-form">
+        <h4 class="mb-3">Edit profile</h4>
+        <form method="post" novalidate>{% csrf_token %}
+          <div class="row"><div class="col-sm-6">{% include "includes/form_field.html" with field=form.first_name %}</div><div class="col-sm-6">{% include "includes/form_field.html" with field=form.last_name %}</div></div>
+          {% include "includes/form_field.html" with field=form.headline %}
+          {% include "includes/form_field.html" with field=form.bio %}
+          <button class="btn btn-primary" type="submit">Save changes</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

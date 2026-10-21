@@ -1,0 +1,30 @@
+{% extends "learning/learn_base.html" %}
+{% block title %}Result · {{ quiz.title }}{% endblock %}
+{% block learn_content %}
+<div class="question-card d-flex flex-wrap align-items-center gap-4 mb-4">
+  <div class="score-ring" style="--pct:{{ attempt.score|floatformat:0 }}; --ring-color: {% if attempt.passed %}#276a1a{% else %}#a32e00{% endif %}"><div>{{ attempt.score|floatformat:0 }}%</div></div>
+  <div class="flex-grow-1">
+    <div class="small-caps">{{ quiz.title }}</div>
+    <h1 class="h3 mb-1">{% if attempt.passed %}Nice work, you passed!{% else %}Not quite there yet{% endif %}</h1>
+    <p class="text-muted mb-2">{{ attempt.correct }} of {{ attempt.total }} correct · pass mark {{ quiz.pass_mark }}% · {{ attempt.submitted_at|date:"M j, Y H:i" }}</p>
+    <div class="d-flex flex-wrap gap-2">
+      {% if not attempt.passed %}<a class="btn btn-primary" href="{% url 'quiz' course.slug quiz.id %}"><i class="bi bi-arrow-repeat me-1"></i>Retake quiz</a>{% endif %}
+      {% if next_item %}<a class="btn {% if attempt.passed %}btn-primary{% else %}btn-soft{% endif %}" href="{% if next_item.kind == 'lesson' %}{% url 'lesson' course.slug next_item.obj.id %}{% else %}{% url 'quiz' course.slug next_item.obj.id %}{% endif %}">Next: {{ next_item.obj.title|truncatechars:30 }} <i class="bi bi-arrow-right"></i></a>
+      {% elif attempt.passed %}<a class="btn btn-soft" href="{{ course.get_absolute_url }}">Back to course</a>{% endif %}
+    </div>
+  </div>
+</div>
+<h5 class="mb-3">Review your answers</h5>
+{% for row in rows %}
+<div class="question-card">
+  <div class="d-flex justify-content-between gap-3 mb-3"><div class="fw-semibold">{{ forloop.counter }}. {{ row.q.text }}</div>{% if row.correct %}<span class="badge bg-success flex-shrink-0">Correct</span>{% else %}<span class="badge bg-danger flex-shrink-0">Incorrect</span>{% endif %}</div>
+  {% for key, text in row.q.options %}
+  <div class="option {% if key == row.q.correct_option %}correct{% elif key == row.chosen %}wrong{% endif %}">
+    <span class="fw-semibold">{{ key }}.</span><span class="flex-grow-1">{{ text }}</span>
+    {% if key == row.q.correct_option %}<i class="bi bi-check-circle-fill text-success"></i>{% elif key == row.chosen %}<i class="bi bi-x-circle-fill text-danger"></i>{% endif %}
+  </div>
+  {% endfor %}
+  {% if row.q.explanation %}<div class="small text-muted mt-2"><i class="bi bi-lightbulb me-1"></i>{{ row.q.explanation }}</div>{% endif %}
+</div>
+{% endfor %}
+{% endblock %}

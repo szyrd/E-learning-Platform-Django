@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Join · {{ SITE_NAME }}{% endblock %}
+{% block footer %}{% endblock %}
+{% block content %}
+<div class="auth-wrap">
+  <div class="auth-side">
+    <div class="small-caps text-white-50 mb-3">Join {{ SITE_NAME }}</div>
+    <h1 class="text-white display-6 mb-3">Start learning or start teaching. Today.</h1>
+    <ul class="list-unstyled fs-5 text-white-50 d-grid gap-2 mt-3">
+      <li><i class="bi bi-check2-circle text-info me-2"></i>Free courses to get started</li>
+      <li><i class="bi bi-check2-circle text-info me-2"></i>Track your progress lesson by lesson</li>
+      <li><i class="bi bi-check2-circle text-info me-2"></i>Instructors publish in minutes</li>
+    </ul>
+  </div>
+  <div class="auth-form">
+    <div>
+      <h2 class="mb-1">Create your account</h2>
+      <p class="text-muted mb-4">Already a member? <a href="{% url 'login' %}">Log in</a></p>
+      {% if form.non_field_errors %}<div class="alert alert-danger py-2">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+      <form method="post" novalidate>
+        {% csrf_token %}
+        <div class="mb-3">
+          <label class="form-label">I want to… <span class="text-danger">*</span></label>
+          <div class="row g-2 role-choice">
+            {% for radio in form.role %}
+              <div class="col-6">
+                {{ radio.tag }}
+                <label for="{{ radio.id_for_label }}">
+                  <div class="fw-semibold"><i class="bi {% if radio.data.value == 'student' %}bi-book{% else %}bi-easel{% endif %} me-1 text-primary"></i>{% if radio.data.value == 'student' %}Learn{% else %}Teach{% endif %}</div>
+                  <div class="small text-muted">{% if radio.data.value == 'student' %}Enroll in courses and track progress{% else %}Create courses, lessons and quizzes{% endif %}</div>
+                </label>
+              </div>
+            {% endfor %}
+          </div>
+          {% for error in form.role.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+        </div>
+        <div class="row">
+          <div class="col-sm-6">{% include "includes/form_field.html" with field=form.first_name %}</div>
+          <div class="col-sm-6">{% include "includes/form_field.html" with field=form.last_name %}</div>
+        </div>
+        {% include "includes/form_field.html" with field=form.username %}
+        {% include "includes/form_field.html" with field=form.email %}
+        {% include "includes/form_field.html" with field=form.password1 %}
+        {% include "includes/form_field.html" with field=form.password2 %}
+        <button class="btn btn-primary w-100 btn-lg mt-2" type="submit">Create account</button>
+        <p class="small text-muted mt-3 mb-0">By joining you agree to our terms. This is a demo platform; payments are simulated.</p>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

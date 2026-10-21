@@ -1,0 +1,21 @@
+{% load course_extras humanize %}
+<a class="course-card" href="{{ course.get_absolute_url }}">
+  {% include "includes/course_cover.html" with course=course %}
+  <div class="body">
+    <div class="meta d-flex justify-content-between">
+      <span>{{ course.category.name|default:"General" }}</span>
+      {% if course.id in enrolled_ids %}<span class="text-success fw-semibold"><i class="bi bi-check-circle-fill"></i> Enrolled</span>{% endif %}
+    </div>
+    <div class="title">{{ course.title }}</div>
+    <div class="meta">{{ course.instructor.display_name }}</div>
+    {% if course.rating %}
+      <div class="meta d-flex align-items-center gap-1"><span class="rating-num">{{ course.rating }}</span> {{ course.rating|stars }} <span>({{ course.review_count|default:0|intcomma }})</span></div>
+    {% else %}
+      <div class="meta text-mid">New course</div>
+    {% endif %}
+    <div class="footer">
+      <span class="badge-level">{{ course.get_level_display }} · {{ course.lesson_count|default:course.lessons.count }} lessons</span>
+      {% if course.is_free %}<span class="badge-free">FREE</span>{% else %}<span class="price">${{ course.price|floatformat:2 }}</span>{% endif %}
+    </div>
+  </div>
+</a>

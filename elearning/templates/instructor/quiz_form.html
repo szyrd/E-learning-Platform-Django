@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}{% if quiz %}Edit quiz{% else %}New quiz{% endif %} · {{ course.title }}{% endblock %}
+{% block content %}
+<div class="container-xl section pt-4">
+  <a href="{% url 'manage_course' course.slug %}" class="small"><i class="bi bi-arrow-left me-1"></i>{{ course.title }}</a>
+  <h1 class="h3 mt-2 mb-4">{% if quiz %}Edit quiz{% else %}Create a quiz{% endif %}</h1>
+  <div class="row"><div class="col-lg-6">
+    <form method="post" class="card-form" novalidate>{% csrf_token %}
+      {% include "includes/form_field.html" with field=form.title %}
+      {% include "includes/form_field.html" with field=form.description %}
+      {% include "includes/form_field.html" with field=form.pass_mark %}
+      <button class="btn btn-primary" type="submit">{% if quiz %}Save quiz{% else %}Create and add questions{% endif %}</button>
+    </form>
+  </div></div>
+</div>
+{% endblock %}

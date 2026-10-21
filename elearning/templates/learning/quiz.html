@@ -1,0 +1,37 @@
+{% extends "learning/learn_base.html" %}
+{% block title %}{{ quiz.title }} · {{ course.title }}{% endblock %}
+{% block learn_content %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
+  <div><div class="small-caps">Quiz</div><h1 class="h3 mb-1">{{ quiz.title }}</h1>{% if quiz.description %}<p class="text-muted mb-0">{{ quiz.description }}</p>{% endif %}</div>
+  <div class="text-end small text-muted">{{ questions|length }} question{{ questions|length|pluralize }} · pass mark {{ quiz.pass_mark }}%{% if best is not None %}<br>Your best: <span class="fw-semibold {% if best >= quiz.pass_mark %}text-success{% else %}text-warning{% endif %}">{{ best|floatformat:0 }}%</span>{% endif %}</div>
+</div>
+{% if not questions %}
+  <div class="empty-state"><i class="bi bi-patch-question d-block mb-2"></i>This quiz has no questions yet.</div>
+{% elif not enrollment %}
+  <div class="alert alert-light border">{% if is_owner %}You're previewing as the instructor; submissions are disabled.{% else %}Enroll to take this quiz.{% endif %}</div>
+  {% for q in questions %}<div class="question-card"><div class="fw-semibold mb-2">{{ forloop.counter }}. {{ q.text }}</div>{% for key, text in q.options %}<div class="option"><span class="fw-semibold">{{ key }}.</span><span>{{ text }}</span></div>{% endfor %}</div>{% endfor %}
+{% else %}
+  <form method="post" novalidate>{% csrf_token %}
+    {% for q in questions %}
+    <div class="question-card">
+      <div class="fw-semibold mb-3">{{ forloop.counter }}. {{ q.text }}</div>
+      {% for key, text in q.options %}
+      <label class="option"><input type="radio" name="q{{ q.id }}" value="{{ key }}" {% for k, v in answers.items %}{% if k == q.id|stringformat:'s' and v == key %}checked{% endif %}{% endfor %} required><span><span class="fw-semibold me-1">{{ key }}.</span>{{ text }}</span></label>
+      {% endfor %}
+    </div>
+    {% endfor %}
+    <div class="d-flex justify-content-between align-items-center">
+      <span class="small text-muted">You can retake the quiz as many times as you like.</span>
+      <button class="btn btn-primary btn-lg" type="submit">Submit answers</button>
+    </div>
+  </form>
+  {% if attempts %}
+  <div class="mt-5">
+    <h5>Previous attempts</h5>
+    <div class="table-lh"><table class="table"><thead><tr><th>When</th><th>Score</th><th>Result</th><th></th></tr></thead><tbody>
+      {% for a in attempts %}<tr><td>{{ a.submitted_at|date:"M j, Y H:i" }}</td><td class="fw-semibold">{{ a.score|floatformat:0 }}% ({{ a.correct }}/{{ a.total }})</td><td>{% if a.passed %}<span class="badge bg-success">Passed</span>{% else %}<span class="badge bg-secondary">Not passed</span>{% endif %}</td><td class="text-end"><a href="{% url 'quiz_result' course.slug quiz.id a.id %}">Review</a></td></tr>{% endfor %}
+    </tbody></table></div>
+  </div>
+  {% endif %}
+{% endif %}
+{% endblock %}

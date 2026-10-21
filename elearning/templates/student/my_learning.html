@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% load course_extras humanize %}
+{% block title %}My Learning · {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<div class="bg-canvas-alt border-bottom">
+  <div class="container-xl py-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
+    <div class="d-flex align-items-center gap-3"><span class="avatar avatar-lg">{{ user.initials }}</span><div><div class="small text-muted">Welcome back</div><h1 class="h3 mb-0">{{ user.display_name }}</h1></div></div>
+    <div class="d-flex gap-4">
+      <div><div class="small text-muted">In progress</div><div class="fs-4 fw-bold">{{ in_progress|length }}</div></div>
+      <div><div class="small text-muted">Completed</div><div class="fs-4 fw-bold">{{ completed|length }}</div></div>
+    </div>
+  </div>
+</div>
+<div class="container-xl section pt-4">
+  <ul class="nav nav-tabs mb-4" role="tablist">
+    <li class="nav-item"><button class="nav-link fw-semibold {% if tab != 'completed' %}active{% endif %}" data-bs-toggle="tab" data-bs-target="#progress" type="button">In progress ({{ in_progress|length }})</button></li>
+    <li class="nav-item"><button class="nav-link fw-semibold {% if tab == 'completed' %}active{% endif %}" data-bs-toggle="tab" data-bs-target="#completed" type="button">Completed ({{ completed|length }})</button></li>
+  </ul>
+  <div class="tab-content">
+    <div class="tab-pane fade {% if tab != 'completed' %}show active{% endif %}" id="progress">
+      <div class="d-grid gap-3">
+        {% for e in in_progress %}
+        <div class="learning-card">
+          <a href="{{ e.course.get_absolute_url }}">{% include "includes/course_cover.html" with course=e.course %}</a>
+          <div class="p-3 d-flex flex-column">
+            <div class="small text-muted">{{ e.course.category.name|default:"General" }} · {{ e.course.instructor.display_name }}</div>
+            <a class="fs-5 fw-semibold text-dark" href="{{ e.course.get_absolute_url }}">{{ e.course.title }}</a>
+            <div class="d-flex justify-content-between small mt-3 mb-1"><span>{{ e.progress_percent }}% complete</span><span class="text-muted">Enrolled {{ e.enrolled_at|naturaltime }}</span></div>
+            <div class="progress mb-3"><div class="progress-bar" style="width:{{ e.progress_percent }}%"></div></div>
+            <div class="mt-auto d-flex gap-2"><a class="btn btn-primary" href="{% url 'learn' e.course.slug %}">{% if e.progress_percent %}Continue{% else %}Start course{% endif %} <i class="bi bi-arrow-right"></i></a><a class="btn btn-soft" href="{{ e.course.get_absolute_url }}#syllabus">Syllabus</a></div>
+          </div>
+        </div>
+        {% empty %}
+        <div class="empty-state"><i class="bi bi-journal-plus d-block mb-2"></i><div class="fw-semibold text-dark">Nothing in progress</div><div>Pick a course below or <a href="{% url 'course_list' %}">browse the catalog</a>.</div></div>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="tab-pane fade {% if tab == 'completed' %}show active{% endif %}" id="completed">
+      <div class="d-grid gap-3">
+        {% for e in completed %}
+        <div class="learning-card">
+          <a href="{{ e.course.get_absolute_url }}">{% include "includes/course_cover.html" with course=e.course %}</a>
+          <div class="p-3 d-flex flex-column">
+            <div class="small text-muted">{{ e.course.category.name|default:"General" }} · {{ e.course.instructor.display_name }}</div>
+            <a class="fs-5 fw-semibold text-dark" href="{{ e.course.get_absolute_url }}">{{ e.course.title }}</a>
+            <div class="text-success fw-semibold small mt-2"><i class="bi bi-patch-check-fill me-1"></i>Completed {{ e.completed_at|date:"M j, Y" }}</div>
+            <div class="mt-auto d-flex gap-2 pt-3"><a class="btn btn-soft" href="{% url 'learn' e.course.slug %}">Review content</a><a class="btn btn-outline-primary" href="{% url 'submit_review' e.course.slug %}"><i class="bi bi-star me-1"></i>Rate course</a></div>
+          </div>
+        </div>
+        {% empty %}<div class="empty-state"><i class="bi bi-trophy d-block mb-2"></i>No completed courses yet. Keep going!</div>{% endfor %}
+      </div>
+    </div>
+  </div>
+
+  {% if recommended %}
+  <div class="mt-5">
+    <h3 class="section-title">Recommended for you</h3>
+    <p class="section-sub">Popular with other learners.</p>
+    <div class="row g-4">{% for course in recommended %}<div class="col-sm-6 col-lg-4">{% include "includes/course_card.html" with course=course %}</div>{% endfor %}</div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,10 @@
+{# usage: {% include "includes/course_cover.html" with course=course %} #}
+<div class="course-cover">
+  {% if course.thumbnail %}
+    <img src="{{ course.thumbnail.url }}" alt="{{ course.title }}" loading="lazy">
+  {% else %}
+    <div class="placeholder-art" style="background: linear-gradient(135deg, {{ course.cover_color }} 0%, #002761 100%);">
+      <i class="bi {{ course.category.icon|default:'bi-journal-bookmark' }}"></i>
+    </div>
+  {% endif %}
+</div>
