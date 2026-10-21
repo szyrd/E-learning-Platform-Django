@@ -156,10 +156,16 @@ class Course(models.Model):
 
     @property
     def rating(self) -> float | None:
-        value = getattr(self, "avg_rating", None)
-        if value is None:
+        if hasattr(self, "avg_rating"):  # annotated by CourseQuerySet.with_stats()
+            value = self.avg_rating
+        else:
             value = self.reviews.aggregate(v=Avg("rating"))["v"]
         return round(value, 1) if value else None
+
+    @property
+    def lessons_total(self) -> int:
+        value = getattr(self, "lesson_count", None)
+        return value if value is not None else self.lessons.count()
 
     @property
     def students(self) -> int:
@@ -252,11 +258,36 @@ class Question(models.Model):
 # ---------------------------------------------------------------------------
 # Learning
 # ---------------------------------------------------------------------------
+class EnrollmentQuerySet(models.QuerySet):
+    def with_progress(self):
+        """Annotate the four counters progress_percent() needs, so lists avoid N+1 queries."""
+        from django.db.models import Count, IntegerField, OuterRef, Subquery
+        from django.db.models.functions import Coalesce
+
+        def count_sq(qs, group_field):
+            return Coalesce(Subquery(qs.order_by().values(group_field).annotate(n=Count("pk", distinct=True)).values("n")[:1], output_field=IntegerField()), 0)
+
+        lesson_total = Lesson.objects.filter(course=OuterRef("course"))
+        quiz_total = Quiz.objects.filter(course=OuterRef("course"))
+        lessons_done = LessonCompletion.objects.filter(enrollment=OuterRef("pk"))
+        return self.annotate(
+            _lesson_total=count_sq(lesson_total, "course"),
+            _quiz_total=count_sq(quiz_total, "course"),
+            _lessons_done=count_sq(lessons_done, "enrollment"),
+            _quizzes_passed=Coalesce(Subquery(
+                QuizAttempt.objects.filter(enrollment=OuterRef("pk"), score__gte=models.F("quiz__pass_mark"))
+                .order_by().values("enrollment").annotate(n=Count("quiz", distinct=True)).values("n")[:1],
+                output_field=IntegerField()), 0),
+        )
+
+
 class Enrollment(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="enrollments")
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="enrollments")
     enrolled_at = models.DateTimeField(auto_now_add=True)
     completed_at = models.DateTimeField(null=True, blank=True)
+
+    objects = EnrollmentQuerySet.as_manager()
 
     class Meta:
         unique_together = [("user", "course")]
@@ -283,10 +314,14 @@ class Enrollment(models.Model):
         )
 
     def progress_percent(self) -> int:
-        total = self.course.lessons.count() + self.course.quizzes.count()
+        if hasattr(self, "_lesson_total"):  # annotated by EnrollmentQuerySet.with_progress()
+            total = self._lesson_total + self._quiz_total
+            done = self._lessons_done + self._quizzes_passed
+        else:
+            total = self.course.lessons.count() + self.course.quizzes.count()
+            done = len(self.completed_lesson_ids()) + len(self.passed_quiz_ids())
         if total == 0:
             return 0
-        done = len(self.completed_lesson_ids()) + len(self.passed_quiz_ids())
         return min(100, round(done * 100 / total))
 
     def refresh_completion(self) -> None:

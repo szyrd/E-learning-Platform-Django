@@ -18,8 +18,8 @@ def _course_access(request, slug):
     return course, enrollment, is_owner
 
 
-def _learn_context(request, course, enrollment, is_owner, **extra):
-    outline = course_outline(course, enrollment)
+def _learn_context(request, course, enrollment, is_owner, outline=None, **extra):
+    outline = outline if outline is not None else course_outline(course, enrollment)
     ctx = {
         "course": course,
         "enrollment": enrollment,
@@ -74,7 +74,7 @@ def lesson(request, slug, lesson_id):
         raise PermissionDenied("Enroll in this course to watch this lesson.")
     outline = course_outline(course, enrollment)
     return render(request, "learning/lesson.html", _learn_context(
-        request, course, enrollment, is_owner,
+        request, course, enrollment, is_owner, outline=outline,
         lesson=lesson, current_kind="lesson", current_id=lesson.id,
         is_done=bool(enrollment) and lesson.id in enrollment.completed_lesson_ids(),
         next_item=_next_item(outline, "lesson", lesson.id),
@@ -141,6 +141,6 @@ def quiz_result(request, slug, quiz_id, attempt_id):
         review_rows.append({"q": q, "chosen": chosen, "chosen_text": dict(q.options).get(chosen, "—"), "correct": chosen == q.correct_option})
     outline = course_outline(course, enrollment)
     return render(request, "learning/quiz_result.html", _learn_context(
-        request, course, enrollment, is_owner,
+        request, course, enrollment, is_owner, outline=outline,
         quiz=quiz, attempt=attempt, rows=review_rows, next_item=_next_item(outline, "quiz", quiz.id), current_kind="quiz", current_id=quiz.id,
     ))

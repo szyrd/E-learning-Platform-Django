@@ -10,7 +10,7 @@ from ..services import EnrollmentError, enroll, get_enrollment
 
 @student_required
 def my_learning(request):
-    enrollments = Enrollment.objects.filter(user=request.user).select_related("course", "course__instructor", "course__category")
+    enrollments = Enrollment.objects.filter(user=request.user).with_progress().select_related("course", "course__instructor", "course__category")
     in_progress = [e for e in enrollments if not e.is_completed]
     completed = [e for e in enrollments if e.is_completed]
     recommended = (

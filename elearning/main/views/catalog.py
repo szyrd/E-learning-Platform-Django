@@ -80,11 +80,12 @@ def course_detail(request, slug):
         raise Http404
     enrollment = get_enrollment(request.user, course)
     reviews = Review.objects.filter(course=course).select_related("user")
-    rating_breakdown = []
-    total_reviews = reviews.count()
-    for star in range(5, 0, -1):
-        n = reviews.filter(rating=star).count()
-        rating_breakdown.append({"star": star, "count": n, "pct": round(n * 100 / total_reviews) if total_reviews else 0})
+    counts = reviews.aggregate(**{f"s{star}": Count("id", filter=Q(rating=star)) for star in range(1, 6)})
+    total_reviews = sum(counts.values())
+    rating_breakdown = [
+        {"star": star, "count": counts[f"s{star}"], "pct": round(counts[f"s{star}"] * 100 / total_reviews) if total_reviews else 0}
+        for star in range(5, 0, -1)
+    ]
     related = (
         Course.objects.published().with_stats().filter(category=course.category).exclude(pk=course.pk)[:3]
         if course.category else Course.objects.none()

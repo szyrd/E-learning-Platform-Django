@@ -1,5 +1,4 @@
 from django.conf import settings
-from django.conf.urls.static import static
 from django.contrib import admin
 from django.http import JsonResponse
 from django.db import connection
@@ -25,8 +24,11 @@ urlpatterns = [
     path("", include("main.urls")),
 ]
 
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+if settings.DEBUG or settings.SERVE_MEDIA:
+    from django.urls import re_path
+    from django.views.static import serve as serve_media
+
+    urlpatterns += [re_path(r"^media/(?P<path>.*)$", serve_media, {"document_root": settings.MEDIA_ROOT})]
 
 handler403 = "main.views.errors.forbidden"
 handler404 = "main.views.errors.not_found"

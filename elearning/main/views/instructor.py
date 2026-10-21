@@ -42,6 +42,7 @@ def dashboard(request):
 def students(request):
     enrollments = (
         Enrollment.objects.filter(course__instructor=request.user)
+        .with_progress()
         .select_related("user", "course")
         .order_by("-enrolled_at")
     )

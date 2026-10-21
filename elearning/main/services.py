@@ -5,7 +5,7 @@ import secrets
 from decimal import Decimal
 
 from django.db import transaction
-from django.db.models import Sum
+from django.db.models import Count, Sum
 from django.utils import timezone
 
 from .models import Course, Enrollment, Lesson, LessonCompletion, Payment, Quiz, QuizAttempt, User
@@ -82,7 +82,7 @@ def course_outline(course: Course, enrollment: Enrollment | None) -> list[dict]:
     items: list[dict] = []
     for lesson in course.lessons.all():
         items.append({"kind": "lesson", "obj": lesson, "done": lesson.id in done_lessons, "locked": not (enrollment or lesson.is_preview)})
-    for quiz in course.quizzes.all():
+    for quiz in course.quizzes.annotate(question_total=Count("questions")):
         items.append({"kind": "quiz", "obj": quiz, "done": quiz.id in passed_quizzes, "attempted": quiz.id in attempted, "locked": enrollment is None})
     return items
 

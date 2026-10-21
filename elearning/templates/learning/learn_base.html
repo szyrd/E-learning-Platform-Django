@@ -31,7 +31,7 @@
       {% else %}
         <a class="item {% if item.done %}done{% endif %} {% if item.locked %}locked{% endif %} {% if current_kind == 'quiz' and current_id == item.obj.id %}active{% endif %}" {% if not item.locked %}href="{% url 'quiz' course.slug item.obj.id %}"{% endif %}>
           <span class="ico"><i class="bi {% if item.done %}bi-check-circle-fill{% elif item.locked %}bi-lock{% else %}bi-patch-question{% endif %}"></i></span>
-          <span class="flex-grow-1"><span class="d-block">{{ forloop.counter }}. {{ item.obj.title }}</span><span class="small text-muted">Quiz · {{ item.obj.questions.count }} question{{ item.obj.questions.count|pluralize }}{% if item.attempted and not item.done %} · <span class="text-warning">retry</span>{% endif %}</span></span>
+          <span class="flex-grow-1"><span class="d-block">{{ forloop.counter }}. {{ item.obj.title }}</span><span class="small text-muted">Quiz · {{ item.obj.question_total }} question{{ item.obj.question_total|pluralize }}{% if item.attempted and not item.done %} · <span class="text-warning">retry</span>{% endif %}</span></span>
         </a>
       {% endif %}
     {% endfor %}

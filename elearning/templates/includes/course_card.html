@@ -13,7 +13,7 @@
       <div class="meta text-mid">New course</div>
     {% endif %}
     <div class="footer">
-      <span class="badge-level">{{ course.get_level_display }} · {{ course.lesson_count|default:course.lessons.count }} lessons</span>
+      <span class="badge-level">{{ course.get_level_display }} · {{ course.lessons_total }} lesson{{ course.lessons_total|pluralize }}</span>
       {% if course.is_free %}<span class="badge-free">FREE</span>{% else %}<span class="price">${{ course.price|floatformat:2 }}</span>{% endif %}
     </div>
   </div>

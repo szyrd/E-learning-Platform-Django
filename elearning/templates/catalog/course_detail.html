@@ -72,7 +72,7 @@
               </div>
               <div class="small text-muted">
                 {% if item.kind == "lesson" %}<i class="bi bi-play-circle me-1"></i>Video · {{ item.obj.duration_minutes|duration }}{% if item.obj.is_preview %} · <span class="text-primary fw-semibold">Free preview</span>{% endif %}
-                {% else %}<i class="bi bi-patch-question me-1"></i>Quiz · {{ item.obj.questions.count }} question{{ item.obj.questions.count|pluralize }} · pass mark {{ item.obj.pass_mark }}%{% endif %}
+                {% else %}<i class="bi bi-patch-question me-1"></i>Quiz · {{ item.obj.question_total }} question{{ item.obj.question_total|pluralize }} · pass mark {{ item.obj.pass_mark }}%{% endif %}
               </div>
             </div>
             {% if item.locked %}<i class="bi bi-lock text-mid"></i>{% elif item.kind == "lesson" %}<a class="btn btn-sm btn-soft" href="{% url 'lesson' course.slug item.obj.id %}">{% if item.done %}Rewatch{% else %}Watch{% endif %}</a>{% else %}<a class="btn btn-sm btn-soft" href="{% url 'quiz' course.slug item.obj.id %}">{% if item.done %}Review{% else %}Start{% endif %}</a>{% endif %}
