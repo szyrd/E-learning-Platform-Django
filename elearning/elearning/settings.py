@@ -7,6 +7,7 @@ production. See .env.example at the repository root.
 """
 import os
 import sys
+from datetime import timedelta
 from pathlib import Path
 
 import dj_database_url
@@ -52,6 +53,8 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "django_filters",
     "corsheaders",
+    "axes",
+    "csp",
     # local
     "main.apps.MainConfig",
 ]
@@ -66,6 +69,8 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "csp.middleware.CSPMiddleware",
+    "axes.middleware.AxesMiddleware",  # must be last: renders the lockout response
 ]
 
 ROOT_URLCONF = "elearning.urls"
@@ -104,6 +109,10 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Auth
 # ---------------------------------------------------------------------------
 AUTH_USER_MODEL = "main.User"
+AUTHENTICATION_BACKENDS = [
+    "axes.backends.AxesStandaloneBackend",  # must be first: blocks locked-out requests
+    "django.contrib.auth.backends.ModelBackend",
+]
 LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "dashboard"
 LOGOUT_REDIRECT_URL = "home"
@@ -197,6 +206,47 @@ if not DEBUG:
     SECURE_HSTS_SECONDS = int(os.environ.get("SECURE_HSTS_SECONDS", "0"))
     SECURE_CONTENT_TYPE_NOSNIFF = True
     X_FRAME_OPTIONS = "DENY"
+
+# ---------------------------------------------------------------------------
+# Brute-force protection (django-axes)
+# ---------------------------------------------------------------------------
+AXES_ENABLED = env_bool("AXES_ENABLED", default=not TESTING)
+AXES_FAILURE_LIMIT = int(os.environ.get("AXES_FAILURE_LIMIT", "5"))
+AXES_COOLOFF_TIME = timedelta(minutes=int(os.environ.get("AXES_COOLOFF_MINUTES", "15")))
+AXES_LOCKOUT_PARAMETERS = [["username", "ip_address"]]  # lock this username from this IP only
+AXES_RESET_ON_SUCCESS = True
+AXES_LOCKOUT_TEMPLATE = "auth/locked_out.html"
+AXES_IPWARE_PROXY_COUNT = int(os.environ.get("AXES_PROXY_COUNT", "0"))  # set 1 behind nginx / a load balancer
+AXES_IPWARE_META_PRECEDENCE_ORDER = ["HTTP_X_FORWARDED_FOR", "REMOTE_ADDR"]
+
+# ---------------------------------------------------------------------------
+# Content Security Policy (django-csp 4.x)
+# ---------------------------------------------------------------------------
+from csp.constants import NONCE, NONE, SELF  # noqa: E402
+
+_CSP_DIRECTIVES = {
+    "default-src": [SELF],
+    "script-src": [SELF, NONCE, "https://cdn.jsdelivr.net"],
+    "style-src": [SELF, "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com"],
+    "font-src": [SELF, "https://fonts.gstatic.com", "https://cdn.jsdelivr.net"],
+    "img-src": [SELF, "data:", "https:"],
+    "media-src": [SELF, "https:"],
+    "frame-src": ["https://www.youtube-nocookie.com", "https://www.youtube.com", "https://player.vimeo.com"],
+    "connect-src": [SELF],
+    "object-src": [NONE],
+    "base-uri": [SELF],
+    "form-action": [SELF],
+    "frame-ancestors": [NONE],
+}
+_CSP_CONFIG = {
+    "DIRECTIVES": _CSP_DIRECTIVES,
+    # DRF's browsable API ships its own inline scripts; the JSON API itself needs no CSP.
+    "EXCLUDE_URL_PREFIXES": ["/api/"],
+}
+if env_bool("CSP_REPORT_ONLY", default=False):
+    CONTENT_SECURITY_POLICY_REPORT_ONLY = _CSP_CONFIG
+else:
+    CONTENT_SECURITY_POLICY = _CSP_CONFIG
 
 LOGGING = {
     "version": 1,

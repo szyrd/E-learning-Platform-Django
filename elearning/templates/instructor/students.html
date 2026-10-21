@@ -5,7 +5,7 @@
 <div class="container-xl section pt-4">
   <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-3">
     <div><h1 class="h3 mb-1">Students</h1><div class="text-muted">{{ rows|length }} enrollment{{ rows|length|pluralize }}</div></div>
-    <form method="get" class="d-flex align-items-center gap-2"><label class="small text-muted">Course</label><select name="course" class="form-select form-select-sm w-auto" onchange="this.form.submit()"><option value="">All courses</option>{% for c in courses %}<option value="{{ c.slug }}" {% if c.slug == course_slug %}selected{% endif %}>{{ c.title }}</option>{% endfor %}</select></form>
+    <form method="get" class="d-flex align-items-center gap-2"><label class="small text-muted">Course</label><select name="course" class="form-select form-select-sm w-auto" data-autosubmit><option value="">All courses</option>{% for c in courses %}<option value="{{ c.slug }}" {% if c.slug == course_slug %}selected{% endif %}>{{ c.title }}</option>{% endfor %}</select></form>
   </div>
   <div class="table-lh">
     <table class="table">

@@ -14,7 +14,7 @@
       {% if level %}<input type="hidden" name="level" value="{{ level }}">{% endif %}
       {% if price %}<input type="hidden" name="price" value="{{ price }}">{% endif %}
       <label class="small text-muted" for="sort">Sort by</label>
-      <select class="form-select form-select-sm w-auto" id="sort" name="sort" onchange="this.form.submit()">
+      <select class="form-select form-select-sm w-auto" id="sort" name="sort" data-autosubmit>
         <option value="popular" {% if sort == 'popular' %}selected{% endif %}>Most popular</option>
         <option value="rating" {% if sort == 'rating' %}selected{% endif %}>Highest rated</option>
         <option value="newest" {% if sort == 'newest' %}selected{% endif %}>Newest</option>
@@ -36,12 +36,12 @@
         {% if category %}<input type="hidden" name="category" value="{{ category }}">{% endif %}
         <input type="hidden" name="sort" value="{{ sort }}">
         <h6>Level</h6>
-        <div class="form-check"><input class="form-check-input" type="radio" name="level" value="" id="lvl-all" {% if not level %}checked{% endif %} onchange="this.form.submit()"><label class="form-check-label" for="lvl-all">All levels</label></div>
-        {% for value, label in levels %}<div class="form-check"><input class="form-check-input" type="radio" name="level" value="{{ value }}" id="lvl-{{ value }}" {% if level == value %}checked{% endif %} onchange="this.form.submit()"><label class="form-check-label" for="lvl-{{ value }}">{{ label }}</label></div>{% endfor %}
+        <div class="form-check"><input class="form-check-input" type="radio" name="level" value="" id="lvl-all" {% if not level %}checked{% endif %} data-autosubmit><label class="form-check-label" for="lvl-all">All levels</label></div>
+        {% for value, label in levels %}<div class="form-check"><input class="form-check-input" type="radio" name="level" value="{{ value }}" id="lvl-{{ value }}" {% if level == value %}checked{% endif %} data-autosubmit><label class="form-check-label" for="lvl-{{ value }}">{{ label }}</label></div>{% endfor %}
         <h6>Price</h6>
-        <div class="form-check"><input class="form-check-input" type="radio" name="price" value="" id="pr-all" {% if not price %}checked{% endif %} onchange="this.form.submit()"><label class="form-check-label" for="pr-all">Any</label></div>
-        <div class="form-check"><input class="form-check-input" type="radio" name="price" value="free" id="pr-free" {% if price == 'free' %}checked{% endif %} onchange="this.form.submit()"><label class="form-check-label" for="pr-free">Free</label></div>
-        <div class="form-check"><input class="form-check-input" type="radio" name="price" value="paid" id="pr-paid" {% if price == 'paid' %}checked{% endif %} onchange="this.form.submit()"><label class="form-check-label" for="pr-paid">Paid</label></div>
+        <div class="form-check"><input class="form-check-input" type="radio" name="price" value="" id="pr-all" {% if not price %}checked{% endif %} data-autosubmit><label class="form-check-label" for="pr-all">Any</label></div>
+        <div class="form-check"><input class="form-check-input" type="radio" name="price" value="free" id="pr-free" {% if price == 'free' %}checked{% endif %} data-autosubmit><label class="form-check-label" for="pr-free">Free</label></div>
+        <div class="form-check"><input class="form-check-input" type="radio" name="price" value="paid" id="pr-paid" {% if price == 'paid' %}checked{% endif %} data-autosubmit><label class="form-check-label" for="pr-paid">Paid</label></div>
         {% if q or category or level or price %}<a class="btn btn-soft btn-sm w-100 mt-3" href="{% url 'course_list' %}">Clear filters</a>{% endif %}
       </form>
     </aside>

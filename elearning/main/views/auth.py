@@ -20,7 +20,7 @@ def register(request):
     form = RegisterForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
         user = form.save()
-        login(request, user)
+        login(request, user, backend="django.contrib.auth.backends.ModelBackend")
         messages.success(request, f"Welcome to the platform, {user.first_name}!")
         return redirect("dashboard")
     return render(request, "auth/register.html", {"form": form})

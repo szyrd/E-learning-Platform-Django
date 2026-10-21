@@ -14,7 +14,7 @@
             {% for radio in form.method %}<div class="col-6">{{ radio.tag }}<label for="{{ radio.id_for_label }}"><i class="bi {% if radio.data.value == 'card' %}bi-credit-card-2-front{% else %}bi-paypal{% endif %} me-1 text-primary"></i>{{ radio.choice_label }}</label></div>{% endfor %}
           </div>
         </div>
-        <div id="card-fields">
+        <div id="card-fields" data-card-fields>
           {% include "includes/form_field.html" with field=form.cardholder %}
           {% include "includes/form_field.html" with field=form.card_number %}
           <div class="row"><div class="col-6">{% include "includes/form_field.html" with field=form.expiry %}</div><div class="col-6">{% include "includes/form_field.html" with field=form.cvc %}</div></div>
@@ -38,13 +38,4 @@
     </div>
   </div>
 </div>
-{% endblock %}
-{% block scripts %}
-<script>
-  (function(){
-    var radios = document.querySelectorAll('input[name=method]'); var fields = document.getElementById('card-fields');
-    function sync(){ var v = document.querySelector('input[name=method]:checked'); fields.style.display = (v && v.value === 'card') ? '' : 'none'; }
-    radios.forEach(function(r){ r.addEventListener('change', sync); }); sync();
-  })();
-</script>
 {% endblock %}

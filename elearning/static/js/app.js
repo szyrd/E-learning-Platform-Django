@@ -45,6 +45,23 @@
     });
   }
 
+  // Auto-submit filter forms when a control changes (replaces inline onchange handlers).
+  document.querySelectorAll("[data-autosubmit]").forEach(function (el) {
+    el.addEventListener("change", function () { el.form && el.form.submit(); });
+  });
+
+  // Checkout: show card fields only for the card payment method.
+  var cardFields = document.querySelector("[data-card-fields]");
+  if (cardFields) {
+    var methodRadios = document.querySelectorAll("input[name=method]");
+    var syncMethod = function () {
+      var checked = document.querySelector("input[name=method]:checked");
+      cardFields.style.display = checked && checked.value === "card" ? "" : "none";
+    };
+    methodRadios.forEach(function (r) { r.addEventListener("change", syncMethod); });
+    syncMethod();
+  }
+
   // Simple card-number formatting on checkout.
   var card = document.querySelector("input[name=card_number]");
   if (card) {

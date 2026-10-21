@@ -28,9 +28,12 @@ Instructors create courses, lessons and quizzes, and follow their students' prog
 **Platform**
 - Role-based accounts (student / instructor), email or username login, strong-password validation
 - Ownership checks on every mutating view, POST-only deletes, CSRF everywhere
+- Login brute-force lockout (django-axes: 5 failures per username + IP, 15 min cool-off)
+- Strict Content Security Policy (nonce-based scripts, no inline handlers) via django-csp
+- Argon2 password hashing
 - REST API (`/api/`) with JWT auth: courses, lessons, reviews, categories, my enrollments, enroll action
 - Django admin for everything, `/health/` endpoint, WhiteNoise static files, 12-factor settings via env vars
-- 40 automated tests
+- 50 automated tests (auth, catalog, learning, instructor, API, query counts, security)
 
 ---
 
@@ -84,6 +87,8 @@ python manage.py runserver
 
 Run the test-suite: `python manage.py test main`
 
+Unlock an account after too many failed logins: `python manage.py axes_reset` (or `axes_reset_username <name>`).
+
 ---
 
 ## Configuration
@@ -100,6 +105,10 @@ All settings come from environment variables (see `.env.example`):
 | `SEED_DEMO` | seed demo content on container start | `0` |
 | `DJANGO_SUPERUSER_*` | auto-create admin on start | – |
 | `CORS_ALLOWED_ORIGINS` | for a separate front-end | – |
+| `AXES_FAILURE_LIMIT` / `AXES_COOLOFF_MINUTES` | login lockout threshold | `5` / `15` |
+| `AXES_PROXY_COUNT` | set `1` behind nginx so the real client IP is used | `0` |
+| `CSP_REPORT_ONLY` | `1` to only report CSP violations instead of enforcing | `0` |
+| `SERVE_MEDIA` | let Django serve `/media/` (set `0` behind nginx / S3) | `1` |
 
 ---
 
