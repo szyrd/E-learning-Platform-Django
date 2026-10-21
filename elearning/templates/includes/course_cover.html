@@ -7,4 +7,5 @@
       <i class="bi {{ course.category.icon|default:'bi-journal-bookmark' }}"></i>
     </div>
   {% endif %}
+  {% if show_chip and course.category %}<span class="chip">{{ course.category.name }}</span>{% endif %}
 </div>

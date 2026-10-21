@@ -13,12 +13,12 @@ User = get_user_model()
 DEMO_PASSWORD = "learnhub123"
 
 CATEGORIES = [
-    ("Data Science", "bi-graph-up-arrow", "#0056d2", "Statistics, machine learning and analytics."),
-    ("Computer Science", "bi-cpu", "#6f42c1", "Programming, algorithms and software engineering."),
-    ("Business", "bi-briefcase", "#d6336c", "Management, finance, marketing and entrepreneurship."),
-    ("Design", "bi-palette", "#f59f00", "UX, UI and visual communication."),
-    ("Personal Development", "bi-lightbulb", "#12b886", "Productivity, communication and career skills."),
-    ("Languages", "bi-translate", "#fd7e14", "Learn to speak, read and write a new language."),
+    ("Data Science", "bi-graph-up-arrow", "#0f766e", "Statistics, machine learning and analytics."),
+    ("Computer Science", "bi-cpu", "#4f46e5", "Programming, algorithms and software engineering."),
+    ("Business", "bi-briefcase", "#be185d", "Management, finance, marketing and entrepreneurship."),
+    ("Design", "bi-palette", "#d97706", "UX, UI and visual communication."),
+    ("Personal Development", "bi-lightbulb", "#059669", "Productivity, communication and career skills."),
+    ("Languages", "bi-translate", "#e8603c", "Learn to speak, read and write a new language."),
 ]
 
 INSTRUCTORS = [

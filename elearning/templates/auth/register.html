@@ -5,17 +5,17 @@
 <div class="auth-wrap">
   <div class="auth-side">
     <div class="small-caps text-white-50 mb-3">Join {{ SITE_NAME }}</div>
-    <h1 class="text-white display-6 mb-3">Start learning or start teaching. Today.</h1>
+    <h1 class="text-white display-6 mb-3">Learn something useful this week.</h1>
     <ul class="list-unstyled fs-5 text-white-50 d-grid gap-2 mt-3">
-      <li><i class="bi bi-check2-circle text-info me-2"></i>Free courses to get started</li>
-      <li><i class="bi bi-check2-circle text-info me-2"></i>Track your progress lesson by lesson</li>
-      <li><i class="bi bi-check2-circle text-info me-2"></i>Instructors publish in minutes</li>
+      <li><i class="bi bi-check2-circle text-accent me-2"></i>Free courses to get started</li>
+      <li><i class="bi bi-check2-circle text-accent me-2"></i>Progress tracked lesson by lesson</li>
+      <li><i class="bi bi-check2-circle text-accent me-2"></i>Instructors publish in an afternoon</li>
     </ul>
   </div>
   <div class="auth-form">
     <div>
       <h2 class="mb-1">Create your account</h2>
-      <p class="text-muted mb-4">Already a member? <a href="{% url 'login' %}">Log in</a></p>
+      <p class="text-muted mb-4">Already have an account? <a href="{% url 'login' %}">Sign in</a></p>
       {% if form.non_field_errors %}<div class="alert alert-danger py-2">{{ form.non_field_errors|join:" " }}</div>{% endif %}
       <form method="post" novalidate>
         {% csrf_token %}

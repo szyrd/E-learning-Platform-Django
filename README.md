@@ -1,6 +1,6 @@
 # LearnHub · E-learning Platform (Django)
 
-A Coursera-style online learning platform built with **Django 5.1**, **Django REST Framework**, **PostgreSQL** and **Docker**.
+A modern online learning platform built with **Django 5.1**, **Django REST Framework**, **PostgreSQL** and **Docker**.
 Students browse a catalog, enroll (free or simulated checkout), watch video lessons, take graded quizzes and track progress.
 Instructors create courses, lessons and quizzes, and follow their students' progress from a dashboard.
 
@@ -12,7 +12,7 @@ Instructors create courses, lessons and quizzes, and follow their students' prog
 
 **Learners**
 - Public catalog with search, category / level / price filters, sorting and pagination
-- Coursera-style course page: outcomes, syllabus with free previews, instructor bio, rating breakdown and reviews
+- Course landing page: outcomes, syllabus with free previews, instructor bio, rating breakdown and reviews
 - One-click enrollment for free courses, simulated card / PayPal checkout for paid ones
 - Learning view with video player (YouTube, Vimeo or direct MP4), sidebar outline and live progress bar
 - Graded multiple-choice quizzes with pass marks, per-question feedback and attempt history
@@ -120,7 +120,7 @@ All settings come from environment variables (see `.env.example`):
     │   ├── management/commands/{seed_demo,wait_for_db}.py
     │   └── tests/
     ├── templates/             # base + auth / catalog / student / learning / instructor
-    └── static/css/app.css     # design tokens (Coursera-inspired) + components
+    └── static/css/app.css     # design tokens (teal / coral palette) + components
 ```
 
 ## API overview

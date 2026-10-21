@@ -26,7 +26,7 @@ class Migration(migrations.Migration):
                 ('name', models.CharField(max_length=100, unique=True)),
                 ('slug', models.SlugField(blank=True, max_length=110, unique=True)),
                 ('icon', models.CharField(default='bi-journal-bookmark', help_text="Bootstrap Icons class, e.g. 'bi-cpu'.", max_length=60)),
-                ('color', models.CharField(default='#0056d2', help_text='Hex colour used for placeholder covers.', max_length=7)),
+                ('color', models.CharField(default='#0f766e', help_text='Hex colour used for placeholder covers.', max_length=7)),
                 ('description', models.TextField(blank=True)),
             ],
             options={

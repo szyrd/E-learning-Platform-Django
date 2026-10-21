@@ -61,7 +61,7 @@ class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
     slug = models.SlugField(max_length=110, unique=True, blank=True)
     icon = models.CharField(max_length=60, default="bi-journal-bookmark", help_text="Bootstrap Icons class, e.g. 'bi-cpu'.")
-    color = models.CharField(max_length=7, default="#0056d2", help_text="Hex colour used for placeholder covers.")
+    color = models.CharField(max_length=7, default="#0f766e", help_text="Hex colour used for placeholder covers.")
     description = models.TextField(blank=True)
 
     class Meta:
@@ -168,7 +168,7 @@ class Course(models.Model):
 
     @property
     def cover_color(self) -> str:
-        return self.category.color if self.category else "#0056d2"
+        return self.category.color if self.category else "#0f766e"
 
     def content_item_count(self) -> int:
         return self.lessons.count() + self.quizzes.count()

@@ -7,16 +7,16 @@
   <div class="container-xl">
     <div class="row g-4">
       <div class="col-lg-8">
-        <div class="crumbs small mb-3"><a href="{% url 'course_list' %}">Courses</a>{% if course.category %} <span class="mx-1 text-white-50">/</span> <a href="{{ course.category.get_absolute_url }}">{{ course.category.name }}</a>{% endif %}</div>
+        <div class="crumbs small mb-3"><a href="{% url 'course_list' %}">Courses</a>{% if course.category %} <span class="mx-1 text-mid">/</span> <a href="{{ course.category.get_absolute_url }}">{{ course.category.name }}</a>{% endif %}</div>
         {% if not course.is_published %}<span class="badge bg-warning text-dark mb-2">Draft · only you can see this</span>{% endif %}
         <h1>{{ course.title }}</h1>
         {% if course.subtitle %}<p class="lead">{{ course.subtitle }}</p>{% endif %}
         <div class="d-flex align-items-center gap-2 mb-3">
-          <span class="avatar" style="background:#3587fc">{{ course.instructor.initials }}</span>
-          <div><div class="small text-white-50">Instructor</div><div class="fw-semibold">{{ course.instructor.display_name }}</div></div>
+          <span class="avatar avatar-accent">{{ course.instructor.initials }}</span>
+          <div><div class="small text-muted">Instructor</div><div class="fw-semibold">{{ course.instructor.display_name }}</div></div>
         </div>
         <div class="meta-row">
-          {% if course.rating %}<span><span class="fw-bold">{{ course.rating }}</span> {{ course.rating|stars }} <span class="text-white-50">({{ course.review_count|intcomma }} review{{ course.review_count|pluralize }})</span></span>{% endif %}
+          {% if course.rating %}<span><span class="fw-bold">{{ course.rating }}</span> {{ course.rating|stars }} <span class="text-muted">({{ course.review_count|intcomma }} review{{ course.review_count|pluralize }})</span></span>{% endif %}
           <span><i class="bi bi-people me-1"></i>{{ course.students|intcomma }} already enrolled</span>
           <span><i class="bi bi-bar-chart me-1"></i>{{ course.get_level_display }}</span>
           <span><i class="bi bi-translate me-1"></i>{{ course.language }}</span>
@@ -120,7 +120,7 @@
     </div>
 
     <aside class="col-lg-4">
-      <div class="enroll-card sticky-top-offset pull-up">
+      <div class="enroll-card sticky-top-offset mt-4">
         <div class="cover">{% include "includes/course_cover.html" with course=course %}</div>
         <div class="inner">
           {% if is_owner %}
@@ -140,11 +140,11 @@
               <div class="alert alert-light border small mb-0">Instructor accounts can't enroll. Log in as a student to take this course.</div>
             {% elif user.is_authenticated %}
               <form method="post" action="{% url 'enroll' course.slug %}">{% csrf_token %}
-                <button class="btn btn-primary w-100 btn-lg" type="submit">{% if course.is_free %}Enroll for free{% else %}Buy now{% endif %}</button>
+                <button class="btn {% if course.is_free %}btn-primary{% else %}btn-accent{% endif %} w-100 btn-lg" type="submit">{% if course.is_free %}Enroll for free{% else %}Buy this course{% endif %}</button>
               </form>
             {% else %}
-              <a class="btn btn-primary w-100 btn-lg" href="{% url 'login' %}?next={{ request.path|urlencode }}">{% if course.is_free %}Enroll for free{% else %}Buy now{% endif %}</a>
-              <div class="small text-muted text-center mt-2">Log in or create a free account</div>
+              <a class="btn {% if course.is_free %}btn-primary{% else %}btn-accent{% endif %} w-100 btn-lg" href="{% url 'login' %}?next={{ request.path|urlencode }}">{% if course.is_free %}Enroll for free{% else %}Buy this course{% endif %}</a>
+              <div class="small text-muted text-center mt-2">Sign in or create a free account</div>
             {% endif %}
           {% endif %}
           <hr>

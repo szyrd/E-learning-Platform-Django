@@ -2,7 +2,7 @@
 {% load course_extras humanize %}
 {% block title %}Instructor dashboard · {{ SITE_NAME }}{% endblock %}
 {% block content %}
-<div class="bg-canvas-alt border-bottom">
+<div class="bg-paper border-bottom">
   <div class="container-xl py-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
     <div><div class="small text-muted">Instructor dashboard</div><h1 class="h3 mb-0">{{ user.display_name }}</h1></div>
     <a class="btn btn-primary" href="{% url 'course_create' %}"><i class="bi bi-plus-lg me-1"></i>New course</a>

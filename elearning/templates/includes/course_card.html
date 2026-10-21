@@ -1,13 +1,12 @@
 {% load course_extras humanize %}
 <a class="course-card" href="{{ course.get_absolute_url }}">
-  {% include "includes/course_cover.html" with course=course %}
+  {% include "includes/course_cover.html" with course=course show_chip=True %}
   <div class="body">
-    <div class="meta d-flex justify-content-between">
-      <span>{{ course.category.name|default:"General" }}</span>
+    <div class="title">{{ course.title }}</div>
+    <div class="meta d-flex justify-content-between align-items-center">
+      <span><i class="bi bi-person-circle me-1"></i>{{ course.instructor.display_name }}</span>
       {% if course.id in enrolled_ids %}<span class="text-success fw-semibold"><i class="bi bi-check-circle-fill"></i> Enrolled</span>{% endif %}
     </div>
-    <div class="title">{{ course.title }}</div>
-    <div class="meta">{{ course.instructor.display_name }}</div>
     {% if course.rating %}
       <div class="meta d-flex align-items-center gap-1"><span class="rating-num">{{ course.rating }}</span> {{ course.rating|stars }} <span>({{ course.review_count|default:0|intcomma }})</span></div>
     {% else %}
